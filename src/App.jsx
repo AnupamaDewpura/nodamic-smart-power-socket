@@ -1,37 +1,19 @@
 import { useState } from "react";
-import { auth, googleProvider } from "./firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
+import Login from "./components/Login";
 
 function App() {
   const [user, setUser] = useState(null);
 
-  const handleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      setUser(result.user);
-    } catch (error) {
-      console.error("Login error:", error);
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    setUser(null);
-  };
-
   return (
     <div>
       <h1>Nodamic Smart Socket</h1>
+      <Login onLogin={setUser} />
 
-      {user ? (
+      {user && (
         <div>
-          <p>Welcome, {user.displayName}</p>
-          <p>Email: {user.email}</p>
-          <p>Your UID: {user.uid}</p>
-          <button onClick={handleLogout}>Logout</button>
+          <h2>Next: Device Control UI here</h2>
+          <p>UID: {user.uid}</p>
         </div>
-      ) : (
-        <button onClick={handleLogin}>Login with Google</button>
       )}
     </div>
   );
