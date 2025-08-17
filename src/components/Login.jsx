@@ -1,5 +1,6 @@
+// src/components/Login.jsx
 import { useState } from "react";
-import { auth, googleProvider, db } from "../firebase";
+import { auth, googleProvider, db } from "../services/firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { ref, get, set } from "firebase/database";
 

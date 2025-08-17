@@ -1,23 +1,39 @@
 // src/components/Devices.jsx
 import { useEffect, useState } from "react";
-import { db } from "../firebase";
+import { db } from "../services/firebase";
 import { ref, onValue } from "firebase/database";
+import client from "../services/mqttClient";   // shared client
 
 function Devices({ user }) {
   const [devices, setDevices] = useState({});
+  const [statuses, setStatuses] = useState({});
 
   useEffect(() => {
     if (!user) return;
 
     const devicesRef = ref(db, `users/${user.uid}/devices`);
 
-    // Listen for device changes in realtime
     const unsubscribe = onValue(devicesRef, (snapshot) => {
-      const data = snapshot.val();
-      setDevices(data || {}); // fallback empty if no devices yet
+      const data = snapshot.val() || {};
+      setDevices(data);
+
+      // Subscribe to MQTT topics for each device
+      Object.keys(data).forEach((deviceId) => {
+        const topic = `devices/${deviceId}/status`;
+        client.subscribe(topic);
+
+        client.on("message", (receivedTopic, message) => {
+          if (receivedTopic === topic) {
+            setStatuses((prev) => ({
+              ...prev,
+              [deviceId]: message.toString(),
+            }));
+          }
+        });
+      });
     });
 
-    return () => unsubscribe(); // cleanup listener
+    return () => unsubscribe();
   }, [user]);
 
   return (
@@ -30,6 +46,8 @@ function Devices({ user }) {
           {Object.entries(devices).map(([deviceId, device]) => (
             <li key={deviceId}>
               <strong>{device.name || deviceId}</strong>
+              {" — "}
+              {statuses[deviceId] || "Offline"}
             </li>
           ))}
         </ul>
