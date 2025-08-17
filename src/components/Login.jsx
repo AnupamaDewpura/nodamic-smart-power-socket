@@ -1,57 +1,39 @@
 // src/components/Login.jsx
-import { useState } from "react";
-import { auth, googleProvider, db } from "../services/firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
-import { ref, get, set } from "firebase/database";
+import { useState, useEffect } from "react";
+import { auth, googleProvider } from "../services/firebase";
+import { signInWithPopup, onAuthStateChanged } from "firebase/auth";
 
 function Login({ onLogin }) {
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        onLogin(currentUser);
+      } else {
+        setUser(null);
+        onLogin(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [onLogin]);
+
   const handleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const loggedInUser = result.user;
-
-      // Save to local state + parent
-      setUser(loggedInUser);
-      onLogin(loggedInUser);
-
-      // Check if user exists in DB
-      const userRef = ref(db, "users/" + loggedInUser.uid);
-      const snapshot = await get(userRef);
-
-      if (!snapshot.exists()) {
-        await set(userRef, {
-          email: loggedInUser.email,
-          devices: {}
-        });
-        console.log("New user added to database");
-      } else {
-        console.log("User already exists in database");
-      }
+      setUser(result.user);
+      onLogin(result.user);
     } catch (error) {
       console.error("Login error:", error);
     }
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    setUser(null);
-    onLogin(null);
-  };
-
   return (
     <div>
-      {user ? (
-        <div>
-          <p>Welcome, {user.displayName}</p>
-          <p>Email: {user.email}</p>
-          <p>Your UID: {user.uid}</p>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      ) : (
-        <button onClick={handleLogin}>Login with Google</button>
-      )}
+      {!user && <button onClick={handleLogin}>Login with Google</button>}
     </div>
   );
 }
