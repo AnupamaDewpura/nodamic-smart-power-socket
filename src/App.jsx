@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Login from "./components/Login";
+import Devices from "./components/Devices";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -11,8 +12,7 @@ function App() {
 
       {user && (
         <div>
-          <h2>Next: Device Control UI here</h2>
-          <p>UID: {user.uid}</p>
+          <Devices user={user} />
         </div>
       )}
     </div>
