@@ -6,23 +6,40 @@ import AccountMenu from "./components/AccountMenu";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedDevice, setSelectedDevice] = useState(() => {
+    const saved = localStorage.getItem("selectedDevice");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [statuses, setStatuses] = useState({});
 
-  // 👇 Watch selected device status
+  // Persist device selection in localStorage
+  useEffect(() => {
+    if (selectedDevice) {
+      localStorage.setItem("selectedDevice", JSON.stringify(selectedDevice));
+    } else {
+      localStorage.removeItem("selectedDevice");
+    }
+  }, [selectedDevice]);
+
+  // Auto-deselect if device goes offline
   useEffect(() => {
     if (!selectedDevice) return;
 
     const deviceId = selectedDevice.id;
-    const currentStatus = statuses[deviceId]?.toLowerCase?.(); // normalize
+    const currentStatus = statuses[deviceId]?.toLowerCase?.();
 
     if (currentStatus && currentStatus !== "online") {
-      console.log(
-        `Device ${deviceId} went offline, going back to device list...`
-      );
+      console.log(`Device ${deviceId} went offline, going back to device list...`);
       setSelectedDevice(null);
     }
   }, [statuses, selectedDevice]);
+
+  const handleLogout = () => {
+    // Clear device selection on logout
+    setSelectedDevice(null);
+    localStorage.removeItem("selectedDevice");
+    setUser(null);
+  };
 
   return (
     <div>
@@ -31,7 +48,7 @@ function App() {
 
       {user && (
         <>
-          <AccountMenu user={user} onLogout={() => setUser(null)} />
+          <AccountMenu user={user} onLogout={handleLogout} />
           {selectedDevice ? (
             <DeviceDashboard
               device={selectedDevice}
