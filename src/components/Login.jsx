@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { auth, googleProvider } from "../services/firebase";
 import { signInWithPopup, onAuthStateChanged } from "firebase/auth";
+import logomark from "../assets/logomark.svg";
+import footerWordmark from "../assets/footer-wordmark.svg";
 
 function Login({ onLogin }) {
     const [user, setUser] = useState(null);
@@ -32,8 +34,34 @@ function Login({ onLogin }) {
     };
 
     return (
-        <div>
-            {!user && <button onClick={handleLogin}>Login with Google</button>}
+        <div className="login-container">
+            {!user && (
+                <>
+                    <div className="logo-container">
+                        <div className="logo">
+                            <img src={logomark} alt="Nodamic Logo" />
+                        </div>
+                    </div>
+                    
+                    <div className="welcome-text">
+                        <h1 className="welcome-title">Yooo, welcome back to Nodamic!</h1>
+                        <p className="welcome-subtitle">Let's get you plugged in.</p>
+                    </div>
+                    
+                    <button className="login-button" onClick={handleLogin}>
+                        Continue with Google
+                    </button>
+                    
+                    <div className="privacy-text">
+                        We use Google's secure login<br />
+                        so you don't have to remember another password.
+                    </div>
+                    
+                    <div className="footer-text">
+                        <img src={footerWordmark} alt="A project by nodamic" />
+                    </div>
+                </>
+            )}
         </div>
     );
 }
