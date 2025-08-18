@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Login from "./components/Login";
 import DevicesList from "./components/DevicesList";
 import DeviceDashboard from "./components/DeviceDashboard";
-import AccountMenu from "./components/AccountMenu";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,7 +34,6 @@ function App() {
   }, [statuses, selectedDevice]);
 
   const handleLogout = () => {
-    // Clear device selection on logout
     setSelectedDevice(null);
     localStorage.removeItem("selectedDevice");
     setUser(null);
@@ -48,7 +46,6 @@ function App() {
 
       {user && (
         <>
-          <AccountMenu user={user} onLogout={handleLogout} />
           {selectedDevice ? (
             <DeviceDashboard
               device={selectedDevice}
@@ -60,6 +57,7 @@ function App() {
               onSelectDevice={setSelectedDevice}
               statuses={statuses}
               setStatuses={setStatuses}
+              onLogout={handleLogout}
             />
           )}
         </>
