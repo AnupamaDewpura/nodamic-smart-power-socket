@@ -25,7 +25,7 @@ body {
 }
 
 /* Background blur effects */
-.app-container::before {
+.app-container.login-active::before {
   content: '';
   position: absolute;
   top: -500px;
@@ -38,7 +38,7 @@ body {
   z-index: 1;
 }
 
-.app-container::after {
+.app-container.login-active::after {
   content: '';
   position: absolute;
   bottom: -500px;
@@ -115,9 +115,9 @@ body {
 
 .login-button {
   background: white;
-  color: #000000;
+  color: #1E1E20;
   border: none;
-  border-radius: 50px;
+  border-radius: 18px;
   padding: 16px 32px;
   font-family: 'Outfit', sans-serif;
   font-size: 16px;
@@ -125,7 +125,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 20px;
-  min-width: 200px;
+  min-width: 250px;
   letter-spacing: -0.01em;
 }
 
@@ -220,7 +220,7 @@ body {
     margin-top: 20px;
   }
 
-  .app-container::before {
+  .app-container.login-active::before {
     top: -300px;
     right: -300px;
     width: 600px;
@@ -229,7 +229,7 @@ body {
     filter: blur(100px);
   }
 
-  .app-container::after {
+  .app-container.login-active::after {
     bottom: -300px;
     left: -300px;
     width: 600px;
@@ -288,7 +288,7 @@ body {
     max-width: 280px;
   }
 
-  .app-container::before {
+  .app-container.login-active::before {
     top: -150px;
     right: -150px;
     width: 300px;
@@ -297,7 +297,7 @@ body {
     filter: blur(100px);
   }
 
-  .app-container::after {
+  .app-container.login-active::after {
     bottom: -150px;
     left: -150px;
     width: 300px;
@@ -310,4 +310,477 @@ body {
 /* Hide other components when showing login */
 .app-container.login-active > *:not(.login-container) {
   display: none;
+}
+
+/* ========================= 
+   DEVICE LIST PAGE STYLES 
+   ========================= */
+
+.devices-page {
+  min-height: 100vh;
+  display: flex;
+  background: #161617;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  width: 100%;
+}
+
+.sidebar {
+  width: 400px;
+  background: #161617;
+  padding: 40px 32px 32px 32px;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid #2a2a2b;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-content {
+  flex: 1;
+}
+
+.sidebar-header {
+  margin-bottom: 40px;
+}
+
+.sidebar-logo {
+  height: 20px;
+  object-fit: contain;
+}
+
+.welcome-message {
+  font-size: 32px;
+  font-weight: 500;
+  color: #D5D5D5;
+  margin-bottom: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.user-details {
+  margin-bottom: 40px;
+}
+
+.user-detail-item {
+  margin-bottom: 30px;
+}
+
+.user-detail-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #868686;
+  margin-bottom: 4px;
+}
+
+.user-id {
+  background: #2a2a2b;
+  color: #D5D5D5;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+  border: 1px solid #585858;
+  font-family: 'Outfit', sans-serif;
+  margin-top: 4px;
+}
+
+.user-id:hover {
+  background: #333334;
+  transform: translateY(-1px);
+}
+
+.user-email {
+  font-size: 16px;
+  font-weight: 400;
+  color: #D5D5D5;
+  word-break: break-word;
+}
+
+.copy-notification {
+  position: fixed;
+  top: 310px;
+  left: 32px;
+  color: #d5d5d5a2;
+  font-size: 14px;
+  font-weight: 300;
+  z-index: 1000;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.logout-button {
+  background: white;
+  color: #1E1E20;
+  border: none;
+  border-radius: 18px;
+  padding: 16px 32px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+  width: 100%;
+  letter-spacing: -0.01em;
+}
+
+.logout-button:hover {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.sidebar-footer {
+  text-align: center;
+}
+
+.sidebar-footer img {
+  height: 14px;
+  object-fit: contain;
+}
+
+.main-content {
+  margin-left: 400px;
+  flex: 1;
+  padding: 40px;
+  min-height: 100vh;
+  width: calc(100% - 400px);
+  background: #1E1E20;
+}
+
+.devices-header {
+  margin-bottom: 32px;
+}
+
+.devices-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: #D5D5D5;
+  letter-spacing: -0.02em;
+  margin-top: 30px;
+}
+
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.device-card {
+  background: #313132;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #333334;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.device-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.device-card.offline {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.device-card.offline:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.device-icon {
+  width: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.device-icon.online {
+  background: #7FA964;
+}
+
+.device-icon.offline {
+  background: #B25C5C;
+}
+
+.device-icon img {
+  width: 45px;
+  height: 45px;
+  filter: brightness(0) invert(1);
+}
+
+.device-info {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.device-name {
+  font-size: 18px;
+  font-weight: 500;
+  color: #D5D5D5;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.device-status {
+  font-size: 14px;
+  font-weight: 400;
+  color: #868686;
+}
+
+.no-devices {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #868686;
+  font-size: 16px;
+}
+
+.mobile-footer-brand {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.mobile-footer-brand img {
+  height: 14px;
+  object-fit: contain;
+}
+
+/* Mobile header - hidden on desktop */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #161617;
+  border-bottom: 1px solid #2a2a2b;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1001;
+}
+
+.mobile-logo {
+  height: 16px;
+  object-fit: contain;
+}
+
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #a5a5a6;
+  cursor: pointer;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .devices-page {
+    padding-top: 60px;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .sidebar {
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    width: 100%;
+    height: 100vh;
+    padding: 20px 20px 20px 20px;
+    top: 0;
+  }
+
+  .sidebar-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .sidebar.open {
+    transform: translateY(0);
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px 20px 80px 20px;
+  }
+
+  .devices-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .device-card {
+    min-height: 70px;
+  }
+
+  .device-icon {
+    width: 70px;
+  }
+
+  .device-icon img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .device-info {
+    padding: 16px;
+  }
+
+  .device-name {
+    font-size: 16px;
+  }
+
+  .device-status {
+    font-size: 13px;
+  }
+
+  .devices-title {
+    font-size: 30px;
+    margin-top: 0;
+  }
+
+  .devices-header {
+    margin-bottom: 20px;
+  }
+
+  .welcome-message {
+    font-size: 32px;
+    margin-bottom: 24px;
+    margin-top: 120px;
+  }
+
+  .sidebar-header {
+    margin-bottom: 20px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .mobile-footer-brand {
+    display: block;
+  }
+
+  .copy-notification {
+    top: 380px;
+    right: 16px;
+    left: 16px;
+    text-align: center;
+  }
+
+  .sidebar-bottom {
+    text-align: center;
+  }
+
+  .logout-button {
+    width:60%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 20px 16px 80px 16px;
+  }
+
+  .devices-title {
+    font-size: 26px;
+  }
+
+  .welcome-message {
+    font-size: 28px;
+  }
+
+  .device-card {
+    min-height: 60px;
+  }
+
+  .device-icon {
+    width: 65px;
+  }
+
+  .device-icon img {
+    width: 35px;
+    height: 35px;
+  }
+
+  .device-info {
+    padding: 12px;
+  }
+
+  .mobile-header {
+    padding: 0 16px;
+  }
+
+  .copy-notification {
+    top: 370px;
+  }
+
+  .logout-button {
+    width:80%;
+  }
 }
