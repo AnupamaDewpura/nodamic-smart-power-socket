@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Login from "./components/Login";
 import DevicesList from "./components/DevicesList";
 import DeviceDashboard from "./components/DeviceDashboard";
+import "./index.css";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -40,9 +41,8 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>Nodamic Smart Socket</h1>
-      <Login onLogin={setUser} />
+    <div className={`app-container ${!user ? 'login-active' : ''}`}>
+      {!user && <Login onLogin={setUser} />}
 
       {user && (
         <>
