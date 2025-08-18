@@ -1,4 +1,6 @@
 // src/components/DeviceCard.jsx
+import plugIcon from "../assets/plug-icon.svg";
+
 function DeviceCard({ deviceId, device, status, onClick }) {
     const online = status === "Online";
 
@@ -10,22 +12,16 @@ function DeviceCard({ deviceId, device, status, onClick }) {
 
     return (
         <div
+            className={`device-card ${online ? 'online' : 'offline'}`}
             onClick={handleClick}
-            style={{
-                padding: "16px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                width: "200px",
-                cursor: online ? "pointer" : "not-allowed",
-                backgroundColor: online ? "#1fc5a9ff" : "#ac5353ff",
-                opacity: online ? 1 : 0.5,
-                textAlign: "center",
-                margin: "8px",
-                pointerEvents: online ? "auto" : "none",
-            }}
         >
-            <h3>{device.name || deviceId}</h3>
-            <p>{status || "Offline"}</p>
+            <div className={`device-icon ${online ? 'online' : 'offline'}`}>
+                <img src={plugIcon} alt="Device Icon" />
+            </div>
+            <div className="device-info">
+                <div className="device-name">{device.name || deviceId}</div>
+                <div className="device-status">{status || "Offline"}</div>
+            </div>
         </div>
     );
 }
