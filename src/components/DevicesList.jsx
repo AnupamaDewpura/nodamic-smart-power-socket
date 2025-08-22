@@ -115,21 +115,22 @@ function DevicesList({ user, onSelectDevice, statuses, setStatuses, onLogout }) 
                 <div className="devices-header">
                     <h1 className="devices-title">Your Devices</h1>
                 </div>
-
-                <div className="devices-grid">
-                    {Object.entries(devices).length === 0 ? (
-                        <div className="no-devices">No devices yet</div>
-                    ) : (
-                        Object.entries(devices).map(([deviceId, device]) => (
-                            <DeviceCard
-                                key={deviceId}
-                                deviceId={deviceId}
-                                device={device}
-                                status={statuses[deviceId]}
-                                onClick={() => onSelectDevice({ ...device, id: deviceId })}
-                            />
-                        ))
-                    )}
+                <div className="devices-container">
+                    <div className="devices-grid">
+                        {Object.entries(devices).length === 0 ? (
+                            <div className="no-devices">No devices yet</div>
+                        ) : (
+                            Object.entries(devices).map(([deviceId, device]) => (
+                                <DeviceCard
+                                    key={deviceId}
+                                    deviceId={deviceId}
+                                    device={device}
+                                    status={statuses[deviceId]}
+                                    onClick={() => onSelectDevice({ ...device, id: deviceId })}
+                                />
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
 

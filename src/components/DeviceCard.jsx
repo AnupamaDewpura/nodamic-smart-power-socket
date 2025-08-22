@@ -1,5 +1,6 @@
 // src/components/DeviceCard.jsx
-import plugIcon from "../assets/plug-icon.svg";
+import checkIcon from "../assets/check-icon.svg";
+import crossIcon from "../assets/cross-icon.svg";
 
 function DeviceCard({ deviceId, device, status, onClick }) {
     const online = status === "Online";
@@ -15,8 +16,12 @@ function DeviceCard({ deviceId, device, status, onClick }) {
             className={`device-card ${online ? 'online' : 'offline'}`}
             onClick={handleClick}
         >
-            <div className={`device-icon ${online ? 'online' : 'offline'}`}>
-                <img src={plugIcon} alt="Device Icon" />
+            <div className={`device-status-icon ${online ? 'online' : 'offline'}`}>
+                {online ? (
+                    <img src={checkIcon} alt="Online" className="status-icon" />
+                ) : (
+                    <img src={crossIcon} alt="Offline" className="status-icon" />
+                )}
             </div>
             <div className="device-info">
                 <div className="device-name">{device.name || deviceId}</div>
