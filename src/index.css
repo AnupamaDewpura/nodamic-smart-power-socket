@@ -75,8 +75,8 @@ body {
 }
 
 .logo img {
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   object-fit: contain;
 }
 
@@ -115,7 +115,7 @@ body {
 
 .login-button {
   background: white;
-  color: #1E1E20;
+  color: #1A1A1C;
   border: none;
   border-radius: 18px;
   padding: 16px 32px;
@@ -182,8 +182,8 @@ body {
   
   .logo img,
   .logo-placeholder {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     font-size: 20px;
   }
   
@@ -252,8 +252,8 @@ body {
   
   .logo img,
   .logo-placeholder {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     font-size: 18px;
   }
   
@@ -313,28 +313,31 @@ body {
 }
 
 /* ========================= 
-   DEVICE LIST PAGE STYLES 
+   DEVICE LIST PAGE STYLES - FIXED SCROLLING
    ========================= */
 
 .devices-page {
   min-height: 100vh;
+  max-height: 100vh;
   display: flex;
   background: #161617;
   color: white;
   font-family: 'Outfit', sans-serif;
   width: 100%;
+  overflow: hidden; /* Prevent page-level scrolling */
 }
 
 .sidebar {
   width: 400px;
-  background: #161617;
+  background: #1A1A1C;
   padding: 40px 32px 32px 32px;
   position: fixed;
   height: 100vh;
   overflow-y: auto;
-  border-right: 1px solid #2a2a2b;
+  border-right: 1px solid rgba(255, 255, 255, 10%);
   display: flex;
   flex-direction: column;
+  z-index: 12;
 }
 
 .sidebar-content {
@@ -342,7 +345,9 @@ body {
 }
 
 .sidebar-header {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 10%);
+  padding-bottom: 32px;
 }
 
 .sidebar-logo {
@@ -403,8 +408,8 @@ body {
 
 .copy-notification {
   position: fixed;
-  top: 310px;
-  left: 32px;
+  top: 330px;
+  left: 35px;
   color: #d5d5d5a2;
   font-size: 14px;
   font-weight: 300;
@@ -457,14 +462,20 @@ body {
 .main-content {
   margin-left: 400px;
   flex: 1;
-  padding: 40px;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   width: calc(100% - 400px);
-  background: #1E1E20;
+  background: #161617;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .devices-header {
-  margin-bottom: 32px;
+  padding: 40px 40px 0 40px;
+  flex-shrink: 0;
+  background: #161617;
+  z-index: 10;
 }
 
 .devices-title {
@@ -472,7 +483,37 @@ body {
   font-weight: 500;
   color: #D5D5D5;
   letter-spacing: -0.02em;
-  margin-top: 30px;
+  margin: 30px 0 20px 0;
+}
+
+.devices-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 40px 40px 40px;
+}
+
+/* Fade effect overlays for scroll margins */
+.devices-container::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.devices-container::after {
+  bottom: 0px;
+  height: 80px;
+  background: linear-gradient(to top, 
+      #161617 0%, 
+      rgba(22, 22, 23, 0.95) 20%, 
+      rgba(22, 22, 23, 0.6) 50%, 
+      rgba(22, 22, 23, 0.2) 80%, 
+      transparent 100%
+    );
 }
 
 .devices-grid {
@@ -482,17 +523,49 @@ body {
   width: 100%;
 }
 
+/* Device Card Styles */
 .device-card {
-  background: #313132;
-  border-radius: 16px;
+  border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid #333334;
+  border: none;
   display: flex;
-  align-items: stretch;
-  gap: 0;
+  align-items: center;
+  gap: 20px;
   overflow: hidden;
-  min-height: 80px;
+  min-height: 100px;
+  padding: 24px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.device-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.device-card.online::before {
+  background: linear-gradient(135deg, rgba(49, 221, 155, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.device-card.offline::before {
+  background: linear-gradient(135deg, rgba(236, 106, 150, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.device-card.offline {
+  cursor: not-allowed;
+}
+
+.device-card > * {
+  position: relative;
+  z-index: 2;
 }
 
 .device-card:hover {
@@ -500,60 +573,39 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.device-card.offline {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .device-card.offline:hover {
   transform: none;
   box-shadow: none;
 }
 
-.device-icon {
-  width: 85px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-  border-radius: 0;
+.device-status-icon {
+  width: 40px;
+  height: 40px;
 }
 
-.device-icon.online {
-  background: #7FA964;
-}
-
-.device-icon.offline {
-  background: #B25C5C;
-}
-
-.device-icon img {
-  width: 45px;
-  height: 45px;
-  filter: brightness(0) invert(1);
+.status-icon {
+  width: 40px;
+  height: 40px;
 }
 
 .device-info {
   flex: 1;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .device-name {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
-  color: #D5D5D5;
-  margin-bottom: 4px;
+  color: #FFFFFF;
   letter-spacing: -0.01em;
 }
 
 .device-status {
-  font-size: 14px;
-  font-weight: 400;
-  color: #868686;
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .no-devices {
@@ -562,6 +614,24 @@ body {
   padding: 60px 20px;
   color: #868686;
   font-size: 16px;
+}
+
+/* Custom scrollbar styles */
+.devices-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.devices-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.devices-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.devices-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .mobile-footer-brand {
@@ -586,7 +656,7 @@ body {
   left: 0;
   right: 0;
   height: 60px;
-  background: #161617;
+  background: #1A1A1C;
   border-bottom: 1px solid #2a2a2b;
   align-items: center;
   justify-content: space-between;
@@ -627,6 +697,8 @@ body {
 @media (max-width: 768px) {
   .devices-page {
     padding-top: 60px;
+    max-height: 100vh;
+    overflow: hidden;
   }
 
   .mobile-header {
@@ -645,6 +717,12 @@ body {
     height: 100vh;
     padding: 20px 20px 20px 20px;
     top: 0;
+  }
+
+  .sidebar-header {
+    margin-bottom: 40px;
+    border-bottom: none;
+    padding-bottom: 0px;
   }
 
   .sidebar-content {
@@ -666,7 +744,23 @@ body {
   .main-content {
     margin-left: 0;
     width: 100%;
-    padding: 20px 20px 80px 20px;
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+  }
+
+  .devices-header {
+    padding: 20px 20px 0 20px;
+  }
+
+  .devices-container {
+    padding: 10px 20px 80px 20px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Mobile fade effects */
+  .devices-container::after {
+    height: 80px;
   }
 
   .devices-grid {
@@ -675,37 +769,32 @@ body {
   }
 
   .device-card {
-    min-height: 70px;
+    min-height: 85px;
+    padding: 20px;
+    gap: 16px;
   }
 
-  .device-icon {
-    width: 70px;
+  .device-status-icon {
+    width: 35px;
+    height: 35px;
   }
 
-  .device-icon img {
-    width: 38px;
-    height: 38px;
-  }
-
-  .device-info {
-    padding: 16px;
+  .status-icon {
+    width: 35px;
+    height: 35px;
   }
 
   .device-name {
-    font-size: 16px;
+    font-size: 20px;
   }
 
   .device-status {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .devices-title {
     font-size: 30px;
-    margin-top: 0;
-  }
-
-  .devices-header {
-    margin-bottom: 20px;
+    margin: 0 0 10px 0;
   }
 
   .welcome-message {
@@ -738,13 +827,17 @@ body {
   }
 
   .logout-button {
-    width:60%;
+    width: 60%;
   }
 }
 
 @media (max-width: 480px) {
-  .main-content {
-    padding: 20px 16px 80px 16px;
+  .devices-header {
+    padding: 20px 16px 0 16px;
+  }
+
+  .devices-container {
+    padding: 10px 16px 100px 16px;
   }
 
   .devices-title {
@@ -756,20 +849,27 @@ body {
   }
 
   .device-card {
-    min-height: 60px;
+    min-height: 75px;
+    padding: 16px;
+    gap: 14px;
   }
 
-  .device-icon {
-    width: 65px;
+  .device-status-icon {
+    width: 30px;
+    height: 30px;
   }
 
-  .device-icon img {
-    width: 35px;
-    height: 35px;
+  .status-icon {
+    width: 30px;
+    height: 30px;
   }
 
-  .device-info {
-    padding: 12px;
+  .device-name {
+    font-size: 18px;
+  }
+
+  .device-status {
+    font-size: 13px;
   }
 
   .mobile-header {
@@ -777,10 +877,10 @@ body {
   }
 
   .copy-notification {
-    top: 370px;
+    top: 375px;
   }
 
   .logout-button {
-    width:80%;
+    width: 80%;
   }
 }
