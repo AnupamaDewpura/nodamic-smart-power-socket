@@ -1,15 +1,37 @@
 // src/components/DeviceDashboard.jsx
 import { useEffect, useState } from "react";
 import mqttClient from "../services/mqttClient";
+import DeviceInfoCard from "./DeviceInfoCard";
 
-function DeviceDashboard({ device, onBack }) {
+// ⬇️ add these imports to reuse the same sidebar assets & logout flow
+import wordmark from "../assets/wordmark.svg";
+import footerWordmark from "../assets/footer-wordmark.svg";
+import { signOut } from "firebase/auth";
+import { auth } from "../services/firebase";
+
+function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept onLogout too
+  // ----- sidebar UI state (copied from DevicesList style) -----
+  const [copied, setCopied] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(user.uid);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const toggleSidebar = () => setSidebarOpen((s) => !s);
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    onLogout?.();
+  };
+
+  // ----------------- RELAY -----------------
   const [relayState, setRelayState] = useState(null); // null = unknown until confirmed
   const [relayPending, setRelayPending] = useState(false);
 
-  const [algorithmState, setAlgorithmState] = useState(null); // null = unknown
-  const [algorithmPending, setAlgorithmPending] = useState(false);
-
-  // ----------------- RELAY -----------------
   useEffect(() => {
     if (!device?.id) return;
 
@@ -23,17 +45,13 @@ function DeviceDashboard({ device, onBack }) {
     const handleMessage = (topic, message) => {
       if (topic === relayStatusTopic) {
         const status = message.toString().toUpperCase();
-        console.log("Relay status received:", status);
         setRelayState(status);
         setRelayPending(false);
       }
     };
 
     mqttClient.on("message", handleMessage);
-
-    // Request current relay status on mount
-    console.log("Requesting relay status...");
-    mqttClient.publish(relayGetTopic, "STATUS");
+    mqttClient.publish(relayGetTopic, "STATUS"); // request status on mount
 
     return () => {
       mqttClient.unsubscribe(relayStatusTopic);
@@ -43,17 +61,16 @@ function DeviceDashboard({ device, onBack }) {
 
   const toggleRelay = () => {
     if (relayPending || relayState === null) return;
-
     const newState = relayState === "ON" ? "OFF" : "ON";
     const setTopic = `${device.id}/relay/set`;
-
-    console.log("Publishing relay set:", newState);
     mqttClient.publish(setTopic, newState);
-
     setRelayPending(true);
   };
 
-  // ----------------- ALGORITHM (Power Anomaly Detection) -----------------
+  // ----------------- ALGORITHM -----------------
+  const [algorithmState, setAlgorithmState] = useState(null); // null = unknown
+  const [algorithmPending, setAlgorithmPending] = useState(false);
+
   useEffect(() => {
     if (!device?.id) return;
 
@@ -67,16 +84,12 @@ function DeviceDashboard({ device, onBack }) {
     const handleMessage = (topic, message) => {
       if (topic === algoStatusTopic) {
         const status = message.toString().toUpperCase(); // ON / OFF
-        console.log("Algorithm status received:", status);
         setAlgorithmState(status);
         setAlgorithmPending(false);
       }
     };
 
     mqttClient.on("message", handleMessage);
-
-    // Request current algorithm status on mount
-    console.log("Requesting algorithm status...");
     mqttClient.publish(algoGetTopic, "STATUS");
 
     return () => {
@@ -87,78 +100,150 @@ function DeviceDashboard({ device, onBack }) {
 
   const toggleAlgorithm = () => {
     if (algorithmPending || algorithmState === null) return;
-
     const newState = algorithmState === "ON" ? "OFF" : "ON";
     const setTopic = `${device.id}/algorithm/set`;
-
-    console.log("Publishing algorithm set:", newState);
     mqttClient.publish(setTopic, newState);
-
     setAlgorithmPending(true);
   };
 
   return (
-    <div>
-      <button onClick={onBack}>Back to Devices</button>
-      <h2>{device.name} Dashboard</h2>
-      <p>Device ID: {device.id}</p>
-
-      {/* Relay Toggle */}
-      <div style={{ marginTop: "20px" }}>
-        <button
-          onClick={toggleRelay}
-          disabled={relayPending || relayState === null}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "none",
-            cursor:
-              relayPending || relayState === null ? "not-allowed" : "pointer",
-            backgroundColor:
-              relayState === "ON" ? "#1fc5a9ff" : "#ac5353ff",
-            color: "#fff",
-            opacity: relayPending ? 0.6 : 1,
-          }}
-        >
-          {relayState === null
-            ? "Loading..."
-            : relayPending
-            ? "Pending..."
-            : relayState === "ON"
-            ? "Turn OFF Relay"
-            : "Turn ON Relay"}
-        </button>
+    <div className="devices-page">{/* same outer layout as DevicesList */}
+      {/* Mobile header with hamburger and logo */}
+      <div className="mobile-header">
+        <button className="sidebar-toggle" onClick={toggleSidebar}>☰</button>
+        <img src={wordmark} alt="Nodamic" className="mobile-logo" />
       </div>
 
-      {/* Algorithm Detection Toggle */}
-      <div style={{ marginTop: "20px" }}>
-        <button
-          onClick={toggleAlgorithm}
-          disabled={algorithmPending || algorithmState === null}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "none",
-            cursor:
-              algorithmPending || algorithmState === null
-                ? "not-allowed"
-                : "pointer",
-            backgroundColor:
-              algorithmState === "ON" ? "#1f7ac5ff" : "#ac5353ff",
-            color: "#fff",
-            opacity: algorithmPending ? 0.6 : 1,
-          }}
-        >
-          {algorithmState === null
-            ? "Loading..."
-            : algorithmPending
-            ? "Pending..."
-            : algorithmState === "ON"
-            ? "Deactivate Algorithm"
-            : "Activate Algorithm"}
-        </button>
+      {/* Sidebar overlay for mobile */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? "active" : ""}`}
+        onClick={closeSidebar}
+      ></div>
+
+      {/* Sidebar (copied look & feel) */}
+      <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-content">
+          <div className="sidebar-header">
+            <img src={wordmark} alt="Nodamic" className="sidebar-logo" />
+          </div>
+
+          <div className="welcome-message">
+            Hi, {user.displayName?.split(" ")[0] || "User"}{" "}
+            {user.displayName?.split(" ")[1] || ""}!
+          </div>
+
+          <div className="user-details">
+            <div className="user-detail-item">
+              <div className="user-detail-label">Your Email</div>
+              <div className="user-email">{user.email}</div>
+            </div>
+
+            <div className="user-detail-item">
+              <div className="user-detail-label">Your User ID</div>
+              <button className="user-id" onClick={handleCopy}>
+                {user.uid}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="sidebar-bottom">
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+
+          {/* Desktop footer - shown in sidebar */}
+          <div className="sidebar-footer">
+            <img src={footerWordmark} alt="A project by nodamic" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="main-content">
+        <div className="devices-header">
+          <button onClick={onBack}>Back to Devices</button>
+          <h1 className="devices-title" style={{ marginTop: 20 }}>
+            Dashboard
+          </h1>
+        </div>
+
+        <div className="devices-container">
+          <div className="dashboard-grid">
+            {/* Device Information card */}
+            <DeviceInfoCard user={user} device={device} relayState={relayState} />
+
+            {/* more cards will slot in here later */}
+          </div>
+
+          {/* Keep your existing buttons for now (we'll move into cards later) */}
+          <div style={{ marginTop: 20 }}>
+            {/* Relay Toggle */}
+            <button
+              onClick={toggleRelay}
+              disabled={relayPending || relayState === null}
+              style={{
+                padding: "10px 20px",
+                fontSize: "16px",
+                borderRadius: "8px",
+                border: "none",
+                cursor:
+                  relayPending || relayState === null ? "not-allowed" : "pointer",
+                backgroundColor: relayState === "ON" ? "#1fc5a9ff" : "#ac5353ff",
+                color: "#fff",
+                opacity: relayPending ? 0.6 : 1,
+              }}
+            >
+              {relayState === null
+                ? "Loading..."
+                : relayPending
+                  ? "Pending..."
+                  : relayState === "ON"
+                    ? "Turn OFF Relay"
+                    : "Turn ON Relay"}
+            </button>
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            {/* Algorithm Toggle */}
+            <button
+              onClick={toggleAlgorithm}
+              disabled={algorithmPending || algorithmState === null}
+              style={{
+                padding: "10px 20px",
+                fontSize: "16px",
+                borderRadius: "8px",
+                border: "none",
+                cursor:
+                  algorithmPending || algorithmState === null
+                    ? "not-allowed"
+                    : "pointer",
+                backgroundColor:
+                  algorithmState === "ON" ? "#1f7ac5ff" : "#ac5353ff",
+                color: "#fff",
+                opacity: algorithmPending ? 0.6 : 1,
+              }}
+            >
+              {algorithmState === null
+                ? "Loading..."
+                : algorithmPending
+                  ? "Pending..."
+                  : algorithmState === "ON"
+                    ? "Deactivate Algorithm"
+                    : "Activate Algorithm"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Copy notification */}
+      {copied && (
+        <div className="copy-notification">User ID copied to clipboard</div>
+      )}
+
+      {/* Mobile footer - shown at bottom of page */}
+      <div className="mobile-footer-brand">
+        <img src={footerWordmark} alt="A project by nodamic" />
       </div>
     </div>
   );
