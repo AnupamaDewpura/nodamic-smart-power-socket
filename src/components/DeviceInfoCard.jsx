@@ -5,13 +5,13 @@ import { ref, onValue } from "firebase/database";
 
 /**
  * Props:
- * - user: Firebase auth user (to read /users/{uid}/devices/{deviceId})
- * - device: { id, name? }  (from DevicesList selection)
- * - relayState: "ON" | "OFF" | null (comes from DeviceDashboard's MQTT listener)
+ * - user: Firebase auth user
+ * - device: { id, name? }
+ * - relayState: "ON" | "OFF" | null
  */
 function DeviceInfoCard({ user, device, relayState }) {
   const [fbName, setFbName] = useState(device?.name || "");
-  const [fbStatus, setFbStatus] = useState("Offline"); // Online | Offline
+  const [fbStatus, setFbStatus] = useState("Offline");
   const deviceId = device?.id || "";
 
   useEffect(() => {
@@ -20,7 +20,6 @@ function DeviceInfoCard({ user, device, relayState }) {
     const devRef = ref(db, `users/${user.uid}/devices/${deviceId}`);
     const unsub = onValue(devRef, (snap) => {
       const data = snap.val() || {};
-      // fall back to id if name missing
       setFbName(data.name || deviceId);
       setFbStatus(data.status || "Offline");
     });
@@ -51,9 +50,11 @@ function DeviceInfoCard({ user, device, relayState }) {
 
       <div className="kv">
         <div className="kv-key">Socket Status</div>
-        <div className={`badge ${
-          relayState === "ON" ? "ok" : relayState === "OFF" ? "warn" : "muted"
-        }`}>
+        <div
+          className={`badge ${
+            relayState === "ON" ? "ok" : relayState === "OFF" ? "warn" : "muted"
+          }`}
+        >
           {relayState === null ? "Loading…" : relayState}
         </div>
       </div>
