@@ -48,8 +48,10 @@ function App() {
         <>
           {selectedDevice ? (
             <DeviceDashboard
+              user={user}
               device={selectedDevice}
               onBack={() => setSelectedDevice(null)}
+              onLogout={handleLogout}
             />
           ) : (
             <DevicesList
