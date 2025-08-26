@@ -2,17 +2,20 @@
 import { useEffect, useState } from "react";
 import mqttClient from "../services/mqttClient";
 import DeviceInfoCard from "./DeviceInfoCard";
+import ManualScheduleCard from "./ManualScheduleCard";
 
-// ⬇️ add these imports to reuse the same sidebar assets & logout flow
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 
-function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept onLogout too
-  // ----- sidebar UI state (copied from DevicesList style) -----
+function DeviceDashboard({ user, device, onBack, onLogout }) {
+  // -------- Sidebar UI --------
   const [copied, setCopied] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen((s) => !s);
+  const closeSidebar = () => setSidebarOpen(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(user.uid);
@@ -20,16 +23,13 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const toggleSidebar = () => setSidebarOpen((s) => !s);
-  const closeSidebar = () => setSidebarOpen(false);
-
   const handleLogout = async () => {
     await signOut(auth);
     onLogout?.();
   };
 
-  // ----------------- RELAY -----------------
-  const [relayState, setRelayState] = useState(null); // null = unknown until confirmed
+  // ----------------- RELAY (MQTT) -----------------
+  const [relayState, setRelayState] = useState(null);
   const [relayPending, setRelayPending] = useState(false);
 
   useEffect(() => {
@@ -44,14 +44,14 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
 
     const handleMessage = (topic, message) => {
       if (topic === relayStatusTopic) {
-        const status = message.toString().toUpperCase();
+        const status = message.toString().toUpperCase(); // ON / OFF
         setRelayState(status);
         setRelayPending(false);
       }
     };
 
     mqttClient.on("message", handleMessage);
-    mqttClient.publish(relayGetTopic, "STATUS"); // request status on mount
+    mqttClient.publish(relayGetTopic, "STATUS"); // request current status
 
     return () => {
       mqttClient.unsubscribe(relayStatusTopic);
@@ -67,8 +67,17 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
     setRelayPending(true);
   };
 
-  // ----------------- ALGORITHM -----------------
-  const [algorithmState, setAlgorithmState] = useState(null); // null = unknown
+  // Re-query relay when returning to Manual tab
+  const requeryRelayStatus = () => {
+    if (!device?.id) return;
+    setRelayState(null);         // show "Loading..."
+    setRelayPending(false);
+    const relayGetTopic = `${device.id}/relay/get`;
+    mqttClient.publish(relayGetTopic, "STATUS");
+  };
+
+  // ----------------- ALGORITHM (MQTT) -----------------
+  const [algorithmState, setAlgorithmState] = useState(null);
   const [algorithmPending, setAlgorithmPending] = useState(false);
 
   useEffect(() => {
@@ -107,8 +116,8 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
   };
 
   return (
-    <div className="devices-page">{/* same outer layout as DevicesList */}
-      {/* Mobile header with hamburger and logo */}
+    <div className="devices-page">
+      {/* Mobile header */}
       <div className="mobile-header">
         <button className="sidebar-toggle" onClick={toggleSidebar}>☰</button>
         <img src={wordmark} alt="Nodamic" className="mobile-logo" />
@@ -120,7 +129,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
         onClick={closeSidebar}
       ></div>
 
-      {/* Sidebar (copied look & feel) */}
+      {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-content">
           <div className="sidebar-header">
@@ -152,7 +161,6 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
             Logout
           </button>
 
-          {/* Desktop footer - shown in sidebar */}
           <div className="sidebar-footer">
             <img src={footerWordmark} alt="A project by nodamic" />
           </div>
@@ -170,42 +178,24 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
 
         <div className="devices-container">
           <div className="dashboard-grid">
-            {/* Device Information card */}
+            {/* Device Information */}
             <DeviceInfoCard user={user} device={device} relayState={relayState} />
 
-            {/* more cards will slot in here later */}
+            {/* Manual Control / Schedule (now writes to Firebase) */}
+            <ManualScheduleCard
+              user={user}
+              device={device}
+              relayState={relayState}
+              relayPending={relayPending}
+              onToggleRelay={toggleRelay}
+              onEnterManual={requeryRelayStatus}
+            />
+
+            {/* Future cards: Algorithm Control, Weather Alerts, Power Cut Logs */}
           </div>
 
-          {/* Keep your existing buttons for now (we'll move into cards later) */}
+          {/* Keep algorithm toggle visible for now; will move into its card later */}
           <div style={{ marginTop: 20 }}>
-            {/* Relay Toggle */}
-            <button
-              onClick={toggleRelay}
-              disabled={relayPending || relayState === null}
-              style={{
-                padding: "10px 20px",
-                fontSize: "16px",
-                borderRadius: "8px",
-                border: "none",
-                cursor:
-                  relayPending || relayState === null ? "not-allowed" : "pointer",
-                backgroundColor: relayState === "ON" ? "#1fc5a9ff" : "#ac5353ff",
-                color: "#fff",
-                opacity: relayPending ? 0.6 : 1,
-              }}
-            >
-              {relayState === null
-                ? "Loading..."
-                : relayPending
-                  ? "Pending..."
-                  : relayState === "ON"
-                    ? "Turn OFF Relay"
-                    : "Turn ON Relay"}
-            </button>
-          </div>
-
-          <div style={{ marginTop: 20 }}>
-            {/* Algorithm Toggle */}
             <button
               onClick={toggleAlgorithm}
               disabled={algorithmPending || algorithmState === null}
@@ -227,10 +217,10 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
               {algorithmState === null
                 ? "Loading..."
                 : algorithmPending
-                  ? "Pending..."
-                  : algorithmState === "ON"
-                    ? "Deactivate Algorithm"
-                    : "Activate Algorithm"}
+                ? "Pending..."
+                : algorithmState === "ON"
+                ? "Deactivate Algorithm"
+                : "Activate Algorithm"}
             </button>
           </div>
         </div>
@@ -241,7 +231,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) { // ⬅️ accept 
         <div className="copy-notification">User ID copied to clipboard</div>
       )}
 
-      {/* Mobile footer - shown at bottom of page */}
+      {/* Mobile footer */}
       <div className="mobile-footer-brand">
         <img src={footerWordmark} alt="A project by nodamic" />
       </div>
