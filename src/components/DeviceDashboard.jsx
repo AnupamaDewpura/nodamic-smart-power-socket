@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import mqttClient from "../services/mqttClient";
 import DeviceInfoCard from "./DeviceInfoCard";
 import ManualScheduleCard from "./ManualScheduleCard";
+import AlgorithmControlCard from "./AlgorithmControlCard";   // ⬅️ NEW
 
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
@@ -67,10 +68,9 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     setRelayPending(true);
   };
 
-  // Re-query relay when returning to Manual tab
   const requeryRelayStatus = () => {
     if (!device?.id) return;
-    setRelayState(null);         // show "Loading..."
+    setRelayState(null);
     setRelayPending(false);
     const relayGetTopic = `${device.id}/relay/get`;
     mqttClient.publish(relayGetTopic, "STATUS");
@@ -181,7 +181,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
             {/* Device Information */}
             <DeviceInfoCard user={user} device={device} relayState={relayState} />
 
-            {/* Manual Control / Schedule (now writes to Firebase) */}
+            {/* Manual Control / Schedule */}
             <ManualScheduleCard
               user={user}
               device={device}
@@ -191,37 +191,14 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
               onEnterManual={requeryRelayStatus}
             />
 
-            {/* Future cards: Algorithm Control, Weather Alerts, Power Cut Logs */}
-          </div>
+            {/* Algorithm Control */}
+            <AlgorithmControlCard
+              algorithmState={algorithmState}
+              algorithmPending={algorithmPending}
+              onToggleAlgorithm={toggleAlgorithm}
+            />
 
-          {/* Keep algorithm toggle visible for now; will move into its card later */}
-          <div style={{ marginTop: 20 }}>
-            <button
-              onClick={toggleAlgorithm}
-              disabled={algorithmPending || algorithmState === null}
-              style={{
-                padding: "10px 20px",
-                fontSize: "16px",
-                borderRadius: "8px",
-                border: "none",
-                cursor:
-                  algorithmPending || algorithmState === null
-                    ? "not-allowed"
-                    : "pointer",
-                backgroundColor:
-                  algorithmState === "ON" ? "#1f7ac5ff" : "#ac5353ff",
-                color: "#fff",
-                opacity: algorithmPending ? 0.6 : 1,
-              }}
-            >
-              {algorithmState === null
-                ? "Loading..."
-                : algorithmPending
-                ? "Pending..."
-                : algorithmState === "ON"
-                ? "Deactivate Algorithm"
-                : "Activate Algorithm"}
-            </button>
+            {/* Future cards: Weather Alerts, Power Cut Logs */}
           </div>
         </div>
       </div>
