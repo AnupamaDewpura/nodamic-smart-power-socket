@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import mqttClient from "../services/mqttClient";
 import DeviceInfoCard from "./DeviceInfoCard";
 import ManualScheduleCard from "./ManualScheduleCard";
-import AlgorithmControlCard from "./AlgorithmControlCard";   // ⬅️ NEW
+import AlgorithmControlCard from "./AlgorithmControlCard";
+import WeatherAlertsCard from "./WeatherAlertsCard";
 
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
@@ -198,7 +199,8 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
               onToggleAlgorithm={toggleAlgorithm}
             />
 
-            {/* Future cards: Weather Alerts, Power Cut Logs */}
+            {/* Weather Alerts */}
+            <WeatherAlertsCard user={user} device={device} />
           </div>
         </div>
       </div>
