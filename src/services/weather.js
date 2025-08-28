@@ -105,7 +105,7 @@ export function summarizeAlertsOneLine(critical) {
     return `${item.label}${sev}`;
   });
 
-  return parts.join(" • ");
+  return parts.join(" | ");
 }
 
 // Helper: capitalize first letter only (e.g., "severe" -> "Severe")
