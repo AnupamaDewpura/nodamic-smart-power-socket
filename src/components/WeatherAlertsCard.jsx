@@ -205,7 +205,7 @@ export default function WeatherAlertsCard({ user, device }) {
           type="button"
           role="switch"
           aria-checked={enabled}
-          className={`mode-switch ${enabled ? "right" : "left"}`}
+          className={`toggle-switch ${enabled ? "right" : "left"}`}
           onClick={toggleEnabled}
         >
           <span className="knob" />
