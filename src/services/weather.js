@@ -1,8 +1,6 @@
 // src/services/weather.js
 
-// 🔑 Hardcode your WeatherAPI key here
-const API_KEY = "eff7238f7699425ab46174347252708"; // <-- put your key
-
+const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 const BASE = "https://api.weatherapi.com/v1";
 
 // Search locations for an input query

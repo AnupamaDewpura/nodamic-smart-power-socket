@@ -1,19 +1,14 @@
 // src/services/mqttClient.js
 import mqtt from "mqtt";
 
-const options = {
-  username: "admin",
-  password: "admin@Nodamic2025",
+const client = mqtt.connect(import.meta.env.VITE_MQTT_URL, {
+  username: import.meta.env.VITE_MQTT_USERNAME,
+  password: import.meta.env.VITE_MQTT_PASSWORD,
   protocol: "wss",
-};
-
-const client = mqtt.connect(
-  "wss://52418d0ed1d742209521789a5b2a2f54.s1.eu.hivemq.cloud:8884/mqtt",
-  options
-);
+});
 
 client.on("connect", () => {
-  console.log("Connected to HiveMQ Cloud!");
+  console.log("Connected to MQTT broker!");
 });
 
 client.on("error", (err) => {

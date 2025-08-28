@@ -3,21 +3,18 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
-// Replace this object with your own config from Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyD_nBBefJE0dDV2NB7FWQalpLIAulASXF0",
-  authDomain: "nodamic-smart-socket.firebaseapp.com",
-  databaseURL: "https://nodamic-smart-socket-default-rtdb.firebaseio.com",
-  projectId: "nodamic-smart-socket",
-  storageBucket: "nodamic-smart-socket.firebasestorage.app",
-  messagingSenderId: "529039786125",
-  appId: "1:529039786125:web:b6f638ce2fa4256b56e2c4"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Auth setup
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getDatabase(app);
