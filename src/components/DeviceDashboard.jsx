@@ -5,6 +5,7 @@ import DeviceInfoCard from "./DeviceInfoCard";
 import ManualScheduleCard from "./ManualScheduleCard";
 import AlgorithmControlCard from "./AlgorithmControlCard";
 import WeatherAlertsCard from "./WeatherAlertsCard";
+import PowerCutLogsCard from "./PowerCutLogsCard";
 
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
@@ -201,6 +202,9 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
 
             {/* Weather Alerts */}
             <WeatherAlertsCard user={user} device={device} />
+
+            {/* Power Cut Logs */}
+            <PowerCutLogsCard user={user} device={device} />
           </div>
         </div>
       </div>
