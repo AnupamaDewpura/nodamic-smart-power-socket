@@ -172,8 +172,8 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       {/* Main content */}
       <div className="main-content">
         <div className="devices-header">
-          <button onClick={onBack}>Back to Devices</button>
-          <h1 className="devices-title" style={{ marginTop: 20 }}>
+          <button className="dashboard-back-button" onClick={onBack}>Go Back</button>
+          <h1 className="devices-title">
             Dashboard
           </h1>
         </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, onValue } from "firebase/database";
+import deviceInfoIcon from "../assets/info-icon.svg";
 
 /**
  * Props:
@@ -29,7 +30,10 @@ function DeviceInfoCard({ user, device, relayState }) {
 
   return (
     <div className="card">
-      <div className="card-title">Device Information</div>
+      <div className="card-title">
+        <img src={deviceInfoIcon} alt="Device Info" />
+        Device Information
+      </div>
 
       <div className="kv">
         <div className="kv-key">Device Name</div>
@@ -38,7 +42,7 @@ function DeviceInfoCard({ user, device, relayState }) {
 
       <div className="kv">
         <div className="kv-key">Device ID</div>
-        <div className="kv-val mono">{deviceId}</div>
+        <div className="kv-val">{deviceId}</div>
       </div>
 
       <div className="kv">
