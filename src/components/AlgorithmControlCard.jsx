@@ -25,7 +25,7 @@ export default function AlgorithmControlCard({
           type="button"
           role="switch"
           aria-checked={isActive}
-          className={`mode-switch ${isActive ? "right" : "left"} ${
+          className={`toggle-switch ${isActive ? "right" : "left"} ${
             algorithmPending || algorithmState === null ? "disabled" : ""
           }`}
           onClick={handleSwitch}

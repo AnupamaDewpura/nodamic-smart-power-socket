@@ -4,86 +4,85 @@
 
 /* Dashboard-specific back button */
 .dashboard-back-button {
-  background: none;
-  border: none;
-  color: #868686;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  transition: color 0.2s ease;
-  letter-spacing: -0.01em;
-  position: absolute;
-  right: 50px;
-  top: 75px;
-  z-index: 10;
+    background: none;
+    border: none;
+    color: #868686;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    transition: color 0.2s ease;
+    letter-spacing: -0.01em;
+    position: absolute;
+    right: 50px;
+    top: 75px;
+    z-index: 10;
 }
 
 .dashboard-back-button::before {
-  content: '<';
-  font-size: 18px;
+    content: '<';
+    font-size: 18px;
 }
 
 .dashboard-back-button:hover {
-  color: #D5D5D5;
+    color: #D5D5D5;
 }
 
 /* Dashboard Grid Layout */
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 16px;
-  width: 100%;
-  grid-template-areas: 
-    "device-info manual-control"
-    "algorithm weather"
-    "power-logs power-logs";
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    width: 100%;
+    grid-template-areas:
+        "device-info manual-control"
+        "algorithm weather"
+        "power-logs power-logs";
 }
 
 /* Card Base Styles */
 .card {
-  border-radius: 20px;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(96, 130, 254, 0.12);
-  min-height: 160px;
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    min-height: 160px;
 }
 
 .card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(96, 130, 254, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(96, 130, 254, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
-.card > * {
-  position: relative;
-  z-index: 2;
+.card>* {
+    position: relative;
+    z-index: 2;
 }
 
 /* Card Title */
 .card-title {
-  font-size: 22px;
-  font-weight: 500;
-  color: #FFFFFF;
-  margin-bottom: 10px;
-  letter-spacing: -0.01em;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    font-size: 22px;
+    font-weight: 500;
+    color: #FFFFFF;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 /* Icon container for card titles */
@@ -91,113 +90,599 @@
 
 /* Key-Value Pairs */
 .kv {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
 }
 
 .kv:last-child {
-  margin-bottom: 0;
-  border-bottom: none;
+    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .kv-key {
-  font-size: 15px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: -0.01em;
-  padding: 4px 0;
+    font-size: 15px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: -0.01em;
+    padding: 4px 0;
 }
 
 .kv-val {
-  font-size: 15px;
-  font-weight: 500;
-  color: #D5D5D5;
-  letter-spacing: -0.01em;
-  padding: 4px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    padding: 4px 0;
 }
 
 /* Badge Styles */
 .badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
 }
 
 .badge.ok {
-  background: rgba(49, 221, 154, 0.15);
-  color: #31DD9A;
-  border: 1px solid rgba(49, 221, 154, 0.2);
+    background: rgba(49, 221, 154, 0.15);
+    color: #31DD9A;
+    border: 1px solid rgba(49, 221, 154, 0.2);
 }
 
 .badge.warn {
-  background: rgba(236, 106, 150, 0.15);
-  color: #EC6A96;
-  border: 1px solid rgba(236, 106, 150, 0.2);
+    background: rgba(236, 106, 150, 0.15);
+    color: #EC6A96;
+    border: 1px solid rgba(236, 106, 150, 0.2);
 }
 
 .badge.err {
-  background: rgba(236, 106, 150, 0.15);
-  color: #EC6A96;
-  border: 1px solid rgba(236, 106, 150, 0.2);
+    background: rgba(236, 106, 150, 0.15);
+    color: #EC6A96;
+    border: 1px solid rgba(236, 106, 150, 0.2);
 }
 
 .badge.muted {
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: pulse 2s infinite;
 }
 
 /* Specific Grid Areas */
-.card:nth-child(1) { grid-area: device-info; }
-.card:nth-child(2) { grid-area: manual-control; }
-.card:nth-child(3) { grid-area: algorithm; }
-.card:nth-child(4) { grid-area: weather; }
-.card:nth-child(5) { grid-area: power-logs; }
+.card:nth-child(1) {
+    grid-area: device-info;
+}
+
+.card:nth-child(2) {
+    grid-area: manual-control;
+}
+
+.card:nth-child(3) {
+    grid-area: algorithm;
+}
+
+.card:nth-child(4) {
+    grid-area: weather;
+}
+
+.card:nth-child(5) {
+    grid-area: power-logs;
+}
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .dashboard-back-button {
-    right: 35px;
-    top: 82px;
-  }
+    .dashboard-back-button {
+        right: 35px;
+        top: 82px;
+    }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas: 
-      "device-info"
-      "manual-control"
-      "algorithm"
-      "weather"
-      "power-logs";
-    gap: 12px;
-  }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "device-info"
+            "manual-control"
+            "algorithm"
+            "weather"
+            "power-logs";
+        gap: 12px;
+    }
 
-  .card {
-    padding: 20px;
-  }
+    .card {
+        padding: 20px;
+    }
 }
 
 @media (max-width: 480px) {
-  .dashboard-back-button {
-    right: 35px;
-    top: 78px;
-  }
+    .dashboard-back-button {
+        right: 35px;
+        top: 78px;
+    }
 
-  .card {
-    padding: 16px;
-  }
+    .card {
+        padding: 16px;
+    }
 
-  .kv-key .kv-val {
-    font-size: 14px;
-  }
+    .kv-key .kv-val {
+        font-size: 14px;
+    }
 
-  .badge {
-    padding: 3px 10px;
+    .badge {
+        padding: 3px 10px;
+        font-size: 12px;
+    }
+}
+
+/* ========================= 
+   MANUAL/SCHEDULE CARD STYLES
+   ========================= */
+
+/* Title Row with Toggle Switch */
+.card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.card-title-row.big-toggle {
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+}
+
+.title-label {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.title-label.active {
+    color: #FFFFFF;
+}
+
+.title-label.muted {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Mode Switch Toggle */
+.mode-switch {
+    position: relative;
+    width: 80px;
+    height: 30px;
+    background: rgba(96, 130, 254, 0.3);
+    border: 2px solid rgba(96, 130, 254, 0.4);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    flex-shrink: 0;
+}
+
+.mode-switch:hover {
+    background: rgba(96, 130, 254, 0.4);
+    border-color: rgba(96, 130, 254, 0.6);
+}
+
+.mode-switch.left {
+    background: rgba(96, 130, 254, 0.8);
+    border-color: rgba(96, 130, 254, 1);
+}
+
+.mode-switch.right {
+    background: rgba(96, 130, 254, 0.8);
+    border-color: rgba(96, 130, 254, 1);
+}
+
+.mode-switch .knob {
+    position: absolute;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-switch.left .knob {
+    left: 2px;
+}
+
+.mode-switch.right .knob {
+    left: 52px;
+}
+
+/* Card Subtext */
+.card-subtext {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+}
+
+/* Manual Card Body */
+.manual-card-body {
+    position: relative;
+}
+
+/* Manual Pane */
+.manual-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.kv.inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+}
+
+.kv.inline .kv-key {
+    font-size: 20px;
+    font-weight: 400;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+}
+
+/* Relay Button */
+.btn.relay {
+    width: 250px;
+    height: 35px;
+    border-radius: 24px;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn.relay.off {
+    background: #31DD9A;
+    color: #29292A;
+}
+
+.btn.relay.on {
+    background: #EC6A96;
+    color: #29292A;
+}
+
+.btn.relay.pending {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: not-allowed;
+    animation: pulse 2s infinite;
+}
+
+.btn.relay:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+    box-shadow: none;
+    animation: pulse 2s infinite;
+}
+
+.btn.relay:not(:disabled):hover {
+    transform: translateY(-2px);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Schedule Pane */
+.schedule-pane {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px 32px;
+    align-items: center;
+}
+
+.field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+}
+
+.field-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+}
+
+/* Custom Time Picker */
+.time-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
+    width: 120px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: rgba(96, 130, 254, 0.8);
+    background: rgba(96, 130, 254, 0.1);
+    box-shadow: 0 0 0 4px rgba(96, 130, 254, 0.1);
+}
+
+.time-input:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Custom Time Picker Container */
+.custom-time-picker {
+    position: relative;
+    display: inline-block;
+}
+
+.time-picker-display {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 4px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
+    width: 100px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+}
+
+.time-picker-display:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.time-picker-display.open {
+    border-color: rgba(96, 130, 254, 0.8);
+    background: rgba(96, 130, 254, 0.1);
+}
+
+/* Time Picker Dropdown */
+.time-picker-dropdown {
+    position: fixed;
+    background: rgba(22, 22, 23, 0.5);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(96, 130, 254, 0.3);
+    border-radius: 16px;
+    z-index: 999999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-height: 200px;
+    min-width: 140px;
+    isolation: isolate;
+    transform: translateZ(0);
+}
+
+.time-picker-content {
+    display: flex;
+    padding: 16px 8px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.time-picker-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+}
+
+.time-picker-label {
     font-size: 12px;
-  }
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.time-picker-list {
+    max-height: 120px;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* Internet Explorer 10+ */
+}
+
+.time-picker-list::-webkit-scrollbar {
+    display: none;
+    /* WebKit */
+}
+
+.time-picker-item {
+    padding: 8px 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    width: 100%;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-picker-item:hover {
+    background: rgba(96, 130, 254, 0.2);
+    color: #FFFFFF;
+}
+
+.time-picker-item.selected {
+    background: rgba(96, 130, 254, 0.4);
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* Hide default time input styling */
+.time-input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+.time-input::-webkit-inner-spin-button,
+.time-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Pill Toggle Buttons */
+.pill-toggle {
+    border: none;
+    border-radius: 20px;
+    padding: 4px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100px;
+    font-family: 'Outfit', sans-serif;
+    color: #29292A;
+}
+
+/* Default colors based on content */
+.pill-toggle {
+    background: #31DD9A;
+    /* Default green */
+}
+
+/* Red variant for OFF/No states */
+.pill-toggle.red {
+    background: #EC6A96;
+}
+
+/* Mobile Responsive for Manual/Schedule Card */
+@media (max-width: 768px) {
+    .card-title-row.big-toggle {
+        gap: 12px;
+    }
+
+    .mode-switch {
+        width: 70px;
+        height: 28px;
+    }
+
+    .mode-switch .knob {
+        width: 20px;
+        height: 20px;
+        top: 3px;
+    }
+
+    .mode-switch.right .knob {
+        left: 45px;
+    }
+
+    .schedule-pane {
+        gap: 8px 16px;
+    }
+
+    .card-title img {
+        height: 28px;
+        width: 28px;
+    }
+
+    .kv.inline {
+        padding-top: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mode-switch {
+        width: 45px;
+    }
+
+    .mode-switch.right .knob {
+        left: 20px;
+    }
+
+    .schedule-pane {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 8px;
+    }
+
+    .field {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .field-label {
+        font-size: 15px;
+    }
+
+    .time-input {
+        width: 100px;
+    }
+
+    .pill-toggle {
+        padding: 6px 16px;
+        font-size: 13px;
+    }
+
+    .time-picker-display {
+        font-size: 14px;
+    }
+
+    .btn.relay {
+        width: 200px;
+    }
 }

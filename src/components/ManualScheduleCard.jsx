@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, onValue, update, set } from "firebase/database";
+import CustomTimePicker from './CustomTimePicker';
 
 /**
  * Props:
@@ -172,12 +173,11 @@ export default function ManualScheduleCard({
       {/* Subtext */}
       {isManual ? (
         <p className="card-subtext">
-          Instantly switch the socket on or off. This overrides any schedules while active.
+          Manual Control will allow you to turn on or off the socket anytime. This overrides any schedules while active.
         </p>
       ) : (
         <p className="card-subtext">
-          Pick a start and end time. Choose whether the socket should turn ON or OFF
-          during that window, and whether to repeat every day.
+          Schedule will allow you to keep the socket turned on or off for a specific time period.
         </p>
       )}
 
@@ -191,18 +191,17 @@ export default function ManualScheduleCard({
                 <button
                   onClick={onToggleRelay}
                   disabled={relayPending || relayState === null}
-                  className={`btn relay ${relayState === "ON" ? "on" : "off"} ${
-                    relayPending ? "pending" : ""
-                  }`}
+                  className={`btn relay ${relayState === "ON" ? "on" : "off"} ${relayPending ? "pending" : ""
+                    }`}
                   type="button"
                 >
                   {relayState === null
                     ? "Loading..."
                     : relayPending
-                    ? "Pending..."
-                    : relayState === "ON"
-                    ? "Turn Off"
-                    : "Turn On"}
+                      ? "Pending..."
+                      : relayState === "ON"
+                        ? "Turn Off"
+                        : "Turn On"}
                 </button>
               </div>
             </div>
@@ -211,37 +210,39 @@ export default function ManualScheduleCard({
           <div className="schedule-pane">
             <div className="field">
               <label className="field-label">Start Time</label>
-              <input
-                type="time"
-                className="time-input"
+              <CustomTimePicker
                 value={startTime}
-                onChange={(e) => onChangeStart(e.target.value)}
-                step="60"
+                onChange={onChangeStart}
               />
             </div>
 
             <div className="field">
               <label className="field-label">End Time</label>
-              <input
-                type="time"
-                className="time-input"
+              <CustomTimePicker
                 value={endTime}
-                onChange={(e) => onChangeEnd(e.target.value)}
-                step="60"
+                onChange={onChangeEnd}
               />
             </div>
 
             <div className="field">
               <label className="field-label">Mode</label>
-              <button className="pill-toggle" type="button" onClick={onToggleMode}>
+              <button
+                className={`pill-toggle ${schedulePower === "OFF" ? "red" : ""}`}
+                type="button"
+                onClick={onToggleMode}
+              >
                 {schedulePower}
               </button>
             </div>
 
             <div className="field">
               <label className="field-label">Repeat</label>
-              <button className="pill-toggle" type="button" onClick={onToggleRepeat}>
-                {repeat ? "Yes" : "No"}
+              <button
+                className={`pill-toggle ${repeat ? "" : "red"}`}
+                type="button"
+                onClick={onToggleRepeat}
+              >
+                {repeat ? "YES" : "NO"}
               </button>
             </div>
           </div>
