@@ -1,5 +1,6 @@
 // src/components/WeatherAlertsCard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { db } from "../services/firebase";
 import { ref, onValue, set } from "firebase/database";
 import {
@@ -8,6 +9,9 @@ import {
   filterPowerCritical,
   summarizeAlertsOneLine,
 } from "../services/weather";
+
+import warnIcon from "../assets/weather-warn-icon.svg";
+import safeIcon from "../assets/weather-safe-icon.svg";
 
 export default function WeatherAlertsCard({ user, device }) {
   const deviceId = device?.id;
@@ -26,6 +30,10 @@ export default function WeatherAlertsCard({ user, device }) {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [fetching, setFetching] = useState(false);
 
+  // Refs for positioning the portal dropdown
+  const inputRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
   const pollTimer = useRef(null);
   const debounceTimer = useRef(null);
 
@@ -33,6 +41,18 @@ export default function WeatherAlertsCard({ user, device }) {
     () => loc && typeof loc.lat === "number" && typeof loc.lon === "number",
     [loc]
   );
+
+  // Calculate dropdown position when suggestions change
+  useEffect(() => {
+    if (suggestions.length > 0 && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, [suggestions]);
 
   // subscribe to /weather
   useEffect(() => {
@@ -198,6 +218,38 @@ export default function WeatherAlertsCard({ user, device }) {
     return "warn";
   }, [chipText]);
 
+  // Portal dropdown component
+  const DropdownPortal = () => {
+    if (suggestions.length === 0) return null;
+
+    // Inside DropdownPortal
+    return createPortal(
+      <div
+        className="suggestion-list-portal"
+        style={{
+          top: dropdownPosition.top,
+          left: dropdownPosition.left,
+          width: dropdownPosition.width,
+        }}
+      >
+        {suggestions.map((s, i) => (
+          <button
+            key={`${s.name}-${s.lat}-${s.lon}-${i}`}
+            className={`suggestion-item ${i === suggestions.length - 1 ? "last" : ""}`}
+            type="button"
+            onClick={() => pickSuggestion(s)}
+          >
+            {s.name}
+            {s.region ? `, ${s.region}` : ""}
+            {s.country ? `, ${s.country}` : ""}
+          </button>
+        ))}
+      </div>,
+      document.body
+    );
+
+  };
+
   return (
     <div className="card weather-card">
       <div className="card-title-row big-toggle">
@@ -215,9 +267,11 @@ export default function WeatherAlertsCard({ user, device }) {
 
       {/* Device Location */}
       <div className="field column">
-        <label className="field-label">Device Location</label>
+
         <div className="location-row">
+          <div className="field-label">Location</div>
           <input
+            ref={inputRef}
             className="text-input"
             placeholder={
               loc
@@ -234,32 +288,29 @@ export default function WeatherAlertsCard({ user, device }) {
             onClick={persistLocation}
             disabled={!enabled}
           >
-            Set
+            SET
           </button>
         </div>
 
-        {enabled && suggestions.length > 0 && (
-          <div className="suggestion-list">
-            {suggestions.map((s, i) => (
-              <button
-                key={`${s.name}-${s.lat}-${s.lon}-${i}`}
-                className="suggestion-item"
-                type="button"
-                onClick={() => pickSuggestion(s)}
-              >
-                {s.name}
-                {s.region ? `, ${s.region}` : ""}
-                {s.country ? `, ${s.country}` : ""}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Portal-based dropdown */}
+        <DropdownPortal />
       </div>
 
       {/* Alert summary */}
       <div className="field column">
-        <div className={`alert-chip ${chipClass}`}>{chipText}</div>
-        <div className="updated-text">{lastUpdatedText}</div>
+        <div className={`alert-chip ${chipClass}`}>
+          <img
+            src={(!enabled || chipClass === "warn") ? warnIcon : safeIcon}
+            alt=""
+            className="alert-chip-icon"
+          />
+          <div>
+            {chipText}
+            <div className="updated-text">{lastUpdatedText}</div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

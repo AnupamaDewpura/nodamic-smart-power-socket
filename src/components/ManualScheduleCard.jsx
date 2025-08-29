@@ -196,12 +196,12 @@ export default function ManualScheduleCard({
                   type="button"
                 >
                   {relayState === null
-                    ? "Loading..."
+                    ? "LOADING..."
                     : relayPending
-                      ? "Pending..."
+                      ? "PENDING..."
                       : relayState === "ON"
-                        ? "Turn Off"
-                        : "Turn On"}
+                        ? "TURN OFF"
+                        : "TURN ON"}
                 </button>
               </div>
             </div>
