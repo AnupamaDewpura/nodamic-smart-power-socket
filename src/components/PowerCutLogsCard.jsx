@@ -2,14 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, onValue, update } from "firebase/database";
+import logsIcon from "../assets/logs-icon.svg";
 
-/**
- * RTDB shape with timestamp as the key:
- * users/{uid}/devices/{deviceId}/logs = {
- *   "2025-08-23T14:21:00Z": { details: "..." }  // ISO key
- *   "1692790860000":        { details: "..." }  // or ms-since-epoch key
- * }
- */
 export default function PowerCutLogsCard({ user, device }) {
   const deviceId = device?.id;
   const logsPath =
@@ -18,15 +12,18 @@ export default function PowerCutLogsCard({ user, device }) {
       : null;
 
   const [rows, setRows] = useState([]);
-  const trimmingRef = useRef(false); // prevent re-entrant trim loops
+  const trimmingRef = useRef(false);
 
-  // Subscribe and keep newest first
+  // refs to measure heights
+  const bodyRef = useRef(null);
+  const tableRef = useRef(null);
+  const [bodyMaxHeight, setBodyMaxHeight] = useState(null); // px number
+
+  // Subscribe and keep newest first; also trims to latest 10 in DB
   useEffect(() => {
     if (!logsPath) return;
     const off = onValue(ref(db, logsPath), async (snap) => {
       const v = snap.val();
-
-      // Normalize entries: [{ id:key, ts:key, details }]
       let list = [];
       if (v && typeof v === "object") {
         list = Object.entries(v).map(([key, val]) => ({
@@ -35,34 +32,26 @@ export default function PowerCutLogsCard({ user, device }) {
           details: typeof val === "string" ? val : (val?.details ?? ""),
         }));
       }
-
-      // Sort by timestamp key (supports ISO or numeric)
       list.sort((a, b) => epochFromKey(b.ts) - epochFromKey(a.ts));
-
-      // Keep only the latest 10 in UI (still allows scrolling beyond first 3)
       const top10 = list.slice(0, 10);
       setRows(top10);
 
-      // Auto-trim older ones from RTDB
       const excess = list.slice(10);
       if (excess.length > 0 && !trimmingRef.current) {
         try {
           trimmingRef.current = true;
           const updates = {};
-          for (const r of excess) {
-            updates[`${logsPath}/${r.id}`] = null; // delete
-          }
+          for (const r of excess) updates[`${logsPath}/${r.id}`] = null;
           await update(ref(db), updates);
         } finally {
           trimmingRef.current = false;
         }
       }
     });
-
     return () => off();
   }, [logsPath]);
 
-  // ---- helpers ----
+  // --- helpers ---
   function epochFromKey(key) {
     if (!key) return 0;
     const n = Number(key);
@@ -85,23 +74,76 @@ export default function PowerCutLogsCard({ user, device }) {
 
   const empty = useMemo(() => rows.length === 0, [rows]);
 
+  // Measure first 3 rows and set body max-height accordingly
+  const recomputeBodyHeight = () => {
+    const bodyEl = bodyRef.current;
+    if (!bodyEl) return;
+    const rowEls = bodyEl.querySelectorAll(".logs-row");
+    if (!rowEls.length) {
+      setBodyMaxHeight(null);
+      return;
+    }
+    let total = 0;
+    for (let i = 0; i < Math.min(3, rowEls.length); i++) {
+      const rect = rowEls[i].getBoundingClientRect();
+      total += rect.height;
+    }
+    // Account for possible sub-pixel values
+    setBodyMaxHeight(Math.ceil(total));
+  };
+
+  // Recompute on:
+  // - rows change
+  // - window resize
+  // - any table resize (via ResizeObserver)
+  useEffect(() => {
+    recomputeBodyHeight();
+  }, [rows]);
+
+  useEffect(() => {
+    const ro = new ResizeObserver(() => {
+      recomputeBodyHeight();
+    });
+    if (tableRef.current) ro.observe(tableRef.current);
+    if (bodyRef.current) ro.observe(bodyRef.current);
+
+    const onWinResize = () => recomputeBodyHeight();
+    window.addEventListener("resize", onWinResize);
+
+    // Recompute after fonts load (prevents off-by-one when fonts swap)
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => recomputeBodyHeight());
+    }
+
+    return () => {
+      window.removeEventListener("resize", onWinResize);
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="card logs-card">
-      <div className="card-title-row">
-        <div className="card-title">Power Cut Logs</div>
+      <div className="card-title">
+        <img src={logsIcon} alt="Power Cut Logs" />
+        Power Cut Logs
       </div>
 
-      <div className="logs-table">
+      <div className="logs-table" ref={tableRef}>
         {/* Sticky header */}
         <div className="logs-header">
           <div className="col ts">Timestamp</div>
           <div className="col details">Details</div>
         </div>
 
-        {/* Scrollable body showing 3 rows at a time */}
-        <div className="logs-body three-rows">
+        {/* Scrollable body showing exactly 3 rows (dynamic height) */}
+        <div
+          className="logs-body three-rows"
+          ref={bodyRef}
+          style={bodyMaxHeight ? { maxHeight: `${bodyMaxHeight}px` } : undefined}
+        >
           {empty ? (
-            <div className="logs-empty">No power cut logs yet</div>
+            <div className="logs-empty">No logs yet</div>
           ) : (
             rows.map((r) => (
               <div className="logs-row" key={r.id}>
