@@ -83,7 +83,7 @@ export default function ManualScheduleCard({
       try {
         if (typeof data.enabled === "boolean") {
           setEnabled(data.enabled);
-          setModeTab(data.enabled ? "SCHEDULE" : "MANUAL"); // ⬅️ set tab by enabled
+          setModeTab(data.enabled ? "SCHEDULE" : "MANUAL");
         }
         if (typeof data.start === "string") setStartTime(hhmm(data.start));
         if (typeof data.end === "string") setEndTime(hhmm(data.end));
@@ -152,7 +152,7 @@ export default function ManualScheduleCard({
       {/* ===== Title row: Manual Control | [pill switch] | Schedule ===== */}
       <div className="card-title-row big-toggle">
         <span className={`title-label ${isManual ? "active" : "muted"}`}>
-          Manual Control
+          Manual
         </span>
 
         <button

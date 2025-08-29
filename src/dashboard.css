@@ -251,6 +251,11 @@
     color: rgba(255, 255, 255, 0.4);
 }
 
+.card-title img {
+    height: 30px;
+    width: 30px;
+}
+
 /* Mode Switch Toggle */
 .mode-switch {
     position: relative;
@@ -644,13 +649,6 @@
 }
 
 @media (max-width: 480px) {
-    .mode-switch {
-        width: 45px;
-    }
-
-    .mode-switch.right .knob {
-        left: 20px;
-    }
 
     .schedule-pane {
         grid-template-columns: 1fr;
