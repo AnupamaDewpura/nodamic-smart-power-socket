@@ -10,12 +10,31 @@ export default function AlgorithmControlCard({
   algorithmPending,
   onToggleAlgorithm,
 }) {
-  const isActive = algorithmState === "ON";              // null = unknown/loading
+  const isActive = algorithmState === "ON"; // null = unknown/loading
 
   const handleSwitch = () => {
     if (algorithmPending || algorithmState === null) return;
     onToggleAlgorithm();
   };
+
+  // Badge text + class with pending state reflected
+  const badgeText =
+    algorithmState === null
+      ? "Loading…"
+      : algorithmPending
+      ? "Pending…"
+      : isActive
+      ? "Activated"
+      : "Deactivated";
+
+  const badgeClass =
+    algorithmState === null
+      ? "muted"
+      : algorithmPending
+      ? "muted"
+      : isActive
+      ? "ok"
+      : "err";
 
   return (
     <div className="card algo-card">
@@ -47,27 +66,12 @@ export default function AlgorithmControlCard({
       </div>
 
       <p className="card-subtext">
-        Enable or disable the internal power anomaly detection algorithm. When active,
-        the device will automatically react based on its learned patterns.
+        If Activated, the device’s internal algorithm will monitor frequent power cuts and if detected any, it will turn off the socket.
       </p>
 
       <div className="kv">
         <div className="kv-key">Internal Algorithm Status</div>
-        <div
-          className={`badge ${
-            algorithmState === null
-              ? "muted"
-              : isActive
-              ? "ok"
-              : "err"
-          }`}
-        >
-          {algorithmState === null
-            ? "Loading…"
-            : isActive
-            ? "Activated"
-            : "Deactivated"}
-        </div>
+        <div className={`badge ${badgeClass}`}>{badgeText}</div>
       </div>
     </div>
   );

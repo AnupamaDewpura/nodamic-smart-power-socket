@@ -115,6 +115,17 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     const setTopic = `${device.id}/algorithm/set`;
     mqttClient.publish(setTopic, newState);
     setAlgorithmPending(true);
+
+    // --- watchdog: clear pending if no MQTT response within 10s ---
+    setTimeout(() => {
+      setAlgorithmPending((prev) => {
+        if (prev) {
+          console.warn("Algorithm toggle timed out, keeping previous state");
+          return false;
+        }
+        return prev;
+      });
+    }, 10000);
   };
 
   return (
