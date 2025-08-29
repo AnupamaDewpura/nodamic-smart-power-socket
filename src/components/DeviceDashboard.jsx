@@ -68,6 +68,17 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     const setTopic = `${device.id}/relay/set`;
     mqttClient.publish(setTopic, newState);
     setRelayPending(true);
+
+    // --- watchdog: clear pending if no MQTT response within 10s ---
+    setTimeout(() => {
+      setRelayPending((prev) => {
+        if (prev) {
+          console.warn("Relay toggle timed out, keeping previous state");
+          return false; // stop showing "PENDING..."
+        }
+        return prev;
+      });
+    }, 10000);
   };
 
   const requeryRelayStatus = () => {

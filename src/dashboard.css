@@ -361,13 +361,25 @@
 }
 
 .btn.relay.off {
-    background: #31DD9A;
+    background: rgba(49, 221, 154, 0.9);
+    border-color: rgba(49, 221, 154, 1);
     color: #29292A;
 }
 
+.btn.relay.off:hover {
+    background: rgba(49, 221, 154, 1);
+    border-color: rgba(49, 221, 154, 1);
+}
+
 .btn.relay.on {
-    background: #EC6A96;
+    background: rgba(236, 106, 150, 0.9);
+    border-color: rgba(236, 106, 150, 1);
     color: #29292A;
+}
+
+.btn.relay.on:hover {
+    background: rgba(236, 106, 150, 1);
+    border-color: rgba(236, 106, 150, 1);
 }
 
 .btn.relay.pending {
@@ -381,12 +393,12 @@
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
-    box-shadow: none;
     animation: pulse 2s infinite;
 }
 
-.btn.relay:not(:disabled):hover {
-    transform: translateY(-2px);
+.btn.relay:disabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 @keyframes pulse {
