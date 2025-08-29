@@ -51,7 +51,7 @@ It integrates **Firebase Realtime Database**, **MQTT messaging**, and **Weather 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/nodamic-smart-power-socket.git
+git clone https://github.com/its-thakshila/nodamic-smart-power-socket.git
 cd nodamic-smart-power-socket
 ```
 
