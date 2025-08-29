@@ -709,452 +709,654 @@
     .btn.relay {
         width: 200px;
     }
+
+    .card-subtext {
+        font-size: 13px;
+    }
 }
 
-
-/* ========================= 
+    /* ========================= 
    ALGORITHM CONTROL CARD STYLES
    ========================= */
 
-/* Algorithm Card Specific Styling */
-.algo-card .card-title-row.big-toggle {
-    justify-content: flex-start;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.algo-card .card-title {
-    font-size: 22px;
-    font-weight: 500;
-    color: #FFFFFF;
-    letter-spacing: -0.01em;
-    margin-bottom: 0;
-}
-
-/* Toggle Switch (similar to mode-switch but with different behavior) */
-.toggle-switch {
-    position: relative;
-    width: 80px;
-    height: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    outline: none;
-    flex-shrink: 0;
-}
-
-.toggle-switch:hover:not(.disabled) {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Active state (algorithm ON) */
-.toggle-switch.right {
-    background: rgba(96, 130, 254, 0.9);
-    border-color: rgba(96, 130, 254, 1);
-}
-
-.toggle-switch.right:hover:not(.disabled) {
-    background: rgba(96, 130, 254, 1);
-    border-color: rgba(96, 130, 254, 1);
-}
-
-/* Inactive state (algorithm OFF) */
-.toggle-switch.left {
-    background: rgba(96, 130, 254, 0.3);
-    border-color: rgba(96, 130, 254, 0.4);
-}
-
-.toggle-switch.left:hover:not(.disabled) {
-    background: rgba(96, 130, 254, 0.4);
-    border-color: rgba(96, 130, 254, 0.6);
-}
-
-/* Disabled/Loading state */
-.toggle-switch.disabled {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    cursor: not-allowed;
-    opacity: 0.6;
-    animation: pulse 2s infinite;
-}
-
-/* Toggle Switch Knob */
-.toggle-switch .knob {
-    position: absolute;
-    top: 2px;
-    width: 22px;
-    height: 22px;
-    background: #FFFFFF;
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Knob position for OFF state */
-.toggle-switch.left .knob {
-    left: 2px;
-}
-
-/* Knob position for ON state */
-.toggle-switch.right .knob {
-    left: 52px;
-}
-
-/* Algorithm Card KV styling */
-.algo-card .kv {
-    margin-top: 20px;
-    padding-top: 16px;
-}
-
-.algo-card .kv-key {
-    font-size: 16px;
-    font-weight: 500;
-    color: #FFFFFF;
-    letter-spacing: -0.01em;
-}
-
-.algo-card .badge {
-    padding: 4px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    min-width: 90px;
-    text-align: center;
-}
-
-/* Badge variants for algorithm states */
-.algo-card .badge.ok {
-    background: rgba(49, 221, 154, 0.15);
-    color: #31DD9A;
-    border: 1px solid rgba(49, 221, 154, 0.2);
-}
-
-.algo-card .badge.err {
-    background: rgba(236, 106, 150, 0.15);
-    color: #EC6A96;
-    border: 1px solid rgba(236, 106, 150, 0.2);
-}
-
-.algo-card .badge.muted {
-    background: rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    animation: pulse 2s infinite;
-}
-
-/* Mobile Responsive for Algorithm Card */
-@media (max-width: 768px) {
+    /* Algorithm Card Specific Styling */
     .algo-card .card-title-row.big-toggle {
-        gap: 12px;
-    }
-
-    .toggle-switch {
-        width: 70px;
-        height: 28px;
-    }
-
-    .toggle-switch .knob {
-        width: 20px;
-        height: 20px;
-        top: 2px;
-    }
-
-    .toggle-switch.right .knob {
-        left: 45px;
-    }
-}
-
-@media (max-width: 480px) {
-
-    .algo-card .kv {
-        margin-top: 10px;
-        padding-top: 8px;
-    }
-
-    .algo-card .kv-key {
-        font-size: 15px;
-    }
-
-    .algo-card .badge {
-        padding: 5px 12px;
-        font-size: 12px;
-        min-width: 80px;
-    }
-}
-
-
-/* ========================= 
-   WEATHER ALERTS CARD STYLES
-   ========================= */
-
-/* Weather Card Specific Styling */
-
-.weather-card .card-title-row.big-toggle {
-    justify-content: flex-start;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.weather-card .card-title {
-    font-size: 22px;
-    font-weight: 500;
-    color: #FFFFFF;
-    letter-spacing: -0.01em;
-    margin-bottom: 0;
-}
-
-/* Field Layout for Weather Card */
-.weather-card .field.column {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    /* CRITICAL: Create positioning context for dropdown */
-    position: relative;
-    z-index: 2;
-}
-
-/* Location Input Row - All 3 elements in same line */
-.location-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    /* Ensure this creates a positioning context */
-    position: relative;
-    z-index: 3;
-    margin-bottom: 20px;
-}
-
-.weather-card .field-label {
-    font-size: 16px;
-    font-weight: 500;
-    color: #FFFFFF;
-    letter-spacing: -0.01em;
-    flex-shrink: 0;
-    white-space: nowrap;
-}
-
-/* Text Input Styling */
-.text-input {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    padding: 4px 16px;
-    font-size: 15px;
-    font-weight: 500;
-    color: #FFFFFF;
-    font-family: 'Outfit', sans-serif;
-    letter-spacing: -0.01em;
-    transition: all 0.3s ease;
-    outline: none;
-    min-width: 0;
-    /* Prevents flex item from overflowing */
-    position: relative;
-    z-index: 4;
-}
-
-.text-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-    font-weight: 400;
-}
-
-.text-input:focus {
-    border-color: rgba(96, 130, 254, 0.8);
-    background: rgba(96, 130, 254, 0.1);
-}
-
-.text-input:hover:not(:focus) {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.text-input:disabled {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.4);
-    cursor: not-allowed;
-}
-
-/* Set Button */
-.weather-card .pill-toggle {
-    border: none;
-    border-radius: 20px;
-    padding: 6px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Outfit', sans-serif;
-    background: rgba(96, 130, 254, 0.9);
-    border-color: rgba(96, 130, 254, 1);
-    color: #29292A;
-    flex-shrink: 0;
-    white-space: nowrap;
-    position: relative;
-    z-index: 4;
-}
-
-.weather-card .pill-toggle:hover:not(.disabled) {
-    background: rgba(96, 130, 254, 1);
-    border-color: rgba(96, 130, 254, 1);
-}
-
-.weather-card .pill-toggle:disabled {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.4);
-    cursor: not-allowed;
-    transform: none;
-}
-
-
-.suggestion-list-portal {
-    position: fixed;
-    z-index: 2147483647;
-    background: rgba(22, 22, 23, 0.5);
-    backdrop-filter: blur(20px);
-    border: 2px solid rgba(96, 130, 254, 0.3);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    margin-top: 4px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.suggestion-list-portal::-webkit-scrollbar {
-    display: none;
-}
-
-.suggestion-item {
-    display: block;
-    width: 100%;
-    padding: 12px 16px;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-    font-family: 'Outfit', sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.suggestion-item.last {
-    border-bottom: none;
-}
-
-.suggestion-item:hover {
-    background: rgba(96, 130, 254, 0.2);
-    color: #fff;
-}
-
-/* Alert Chip - Full width */
-.alert-chip {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    min-height: 24px;
-    width: 100%;
-    /* Lower z-index than dropdown */
-    z-index: 1;
-}
-
-/* Icon placeholder for alert chip */
-.alert-chip-icon {
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-}
-
-/* Updated Text */
-.alert-chip .updated-text {
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    margin: 0;
-    line-height: 1.2;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-/* Mobile Responsive for Weather Card */
-@media (max-width: 768px) {
-    .weather-card .card-title-row.big-toggle {
-        gap: 12px;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 16px;
         margin-bottom: 16px;
     }
 
+    .algo-card .card-title {
+        font-size: 22px;
+        font-weight: 500;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+        margin-bottom: 0;
+    }
+
+    /* Toggle Switch (similar to mode-switch but with different behavior) */
+    .toggle-switch {
+        position: relative;
+        width: 80px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        outline: none;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch:hover:not(.disabled) {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Active state (algorithm ON) */
+    .toggle-switch.right {
+        background: rgba(96, 130, 254, 0.9);
+        border-color: rgba(96, 130, 254, 1);
+    }
+
+    .toggle-switch.right:hover:not(.disabled) {
+        background: rgba(96, 130, 254, 1);
+        border-color: rgba(96, 130, 254, 1);
+    }
+
+    /* Inactive state (algorithm OFF) */
+    .toggle-switch.left {
+        background: rgba(96, 130, 254, 0.3);
+        border-color: rgba(96, 130, 254, 0.4);
+    }
+
+    .toggle-switch.left:hover:not(.disabled) {
+        background: rgba(96, 130, 254, 0.4);
+        border-color: rgba(96, 130, 254, 0.6);
+    }
+
+    /* Disabled/Loading state */
+    .toggle-switch.disabled {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        cursor: not-allowed;
+        opacity: 0.6;
+        animation: pulse 2s infinite;
+    }
+
+    /* Toggle Switch Knob */
+    .toggle-switch .knob {
+        position: absolute;
+        top: 2px;
+        width: 22px;
+        height: 22px;
+        background: #FFFFFF;
+        border-radius: 50%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Knob position for OFF state */
+    .toggle-switch.left .knob {
+        left: 2px;
+    }
+
+    /* Knob position for ON state */
+    .toggle-switch.right .knob {
+        left: 52px;
+    }
+
+    /* Algorithm Card KV styling */
+    .algo-card .kv {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+
+    .algo-card .kv-key {
+        font-size: 16px;
+        font-weight: 500;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+    }
+
+    .algo-card .badge {
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        min-width: 90px;
+        text-align: center;
+    }
+
+    /* Badge variants for algorithm states */
+    .algo-card .badge.ok {
+        background: rgba(49, 221, 154, 0.15);
+        color: #31DD9A;
+        border: 1px solid rgba(49, 221, 154, 0.2);
+    }
+
+    .algo-card .badge.err {
+        background: rgba(236, 106, 150, 0.15);
+        color: #EC6A96;
+        border: 1px solid rgba(236, 106, 150, 0.2);
+    }
+
+    .algo-card .badge.muted {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: pulse 2s infinite;
+    }
+
+    /* Mobile Responsive for Algorithm Card */
+    @media (max-width: 768px) {
+        .algo-card .card-title-row.big-toggle {
+            gap: 12px;
+        }
+
+        .toggle-switch {
+            width: 70px;
+            height: 28px;
+        }
+
+        .toggle-switch .knob {
+            width: 20px;
+            height: 20px;
+            top: 2px;
+        }
+
+        .toggle-switch.right .knob {
+            left: 45px;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .algo-card .kv {
+            margin-top: 10px;
+            padding-top: 8px;
+        }
+
+        .algo-card .kv-key {
+            font-size: 15px;
+        }
+
+        .algo-card .badge {
+            padding: 5px 12px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+    }
+
+
+    /* ========================= 
+   WEATHER ALERTS CARD STYLES
+   ========================= */
+
+    /* Weather Card Specific Styling */
+
+    .weather-card .card-title-row.big-toggle {
+        justify-content: flex-start;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .weather-card .card-title {
+        font-size: 22px;
+        font-weight: 500;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+        margin-bottom: 0;
+    }
+
+    /* Field Layout for Weather Card */
+    .weather-card .field.column {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        /* CRITICAL: Create positioning context for dropdown */
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Location Input Row - All 3 elements in same line */
     .location-row {
-        gap: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        /* Ensure this creates a positioning context */
+        position: relative;
+        z-index: 3;
+        margin-bottom: 20px;
     }
-
-    .weather-card .pill-toggle {
-        padding: 6px 20px;
-        font-size: 14px;
-    }
-
-    .alert-chip {
-        padding: 14px 16px;
-        font-size: 14px;
-        gap: 10px;
-    }
-}
-
-@media (max-width: 480px) {
 
     .weather-card .field-label {
-        font-size: 15px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
-    .weather-card .field.column {
-        gap: 10px;
-    }
-
-    /* Keep location row horizontal on mobile */
-    .location-row {
-        flex-direction: row;
-        gap: 8px;
-    }
-
+    /* Text Input Styling */
     .text-input {
-        padding: 4px 14px;
-        font-size: 14px;
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 4px 16px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #FFFFFF;
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: -0.01em;
+        transition: all 0.3s ease;
+        outline: none;
+        min-width: 0;
+        /* Prevents flex item from overflowing */
+        position: relative;
+        z-index: 4;
     }
 
+    .text-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 400;
+    }
+
+    .text-input:focus {
+        border-color: rgba(96, 130, 254, 0.8);
+        background: rgba(96, 130, 254, 0.1);
+    }
+
+    .text-input:hover:not(:focus) {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .text-input:disabled {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.4);
+        cursor: not-allowed;
+    }
+
+    /* Set Button */
     .weather-card .pill-toggle {
-        padding: 6px 16px;
-        font-size: 13px;
-        min-width: 50px;
+        border: none;
+        border-radius: 20px;
+        padding: 6px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Outfit', sans-serif;
+        background: rgba(96, 130, 254, 0.9);
+        border-color: rgba(96, 130, 254, 1);
+        color: #29292A;
+        flex-shrink: 0;
+        white-space: nowrap;
+        position: relative;
+        z-index: 4;
     }
 
+    .weather-card .pill-toggle:hover:not(.disabled) {
+        background: rgba(96, 130, 254, 1);
+        border-color: rgba(96, 130, 254, 1);
+    }
+
+    .weather-card .pill-toggle:disabled {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.4);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+
+    .suggestion-list-portal {
+        position: fixed;
+        z-index: 2147483647;
+        background: rgba(22, 22, 23, 0.5);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(96, 130, 254, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        margin-top: 4px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .suggestion-list-portal::-webkit-scrollbar {
+        display: none;
+    }
+
+    .suggestion-item {
+        display: block;
+        width: 100%;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-family: 'Outfit', sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .suggestion-item.last {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background: rgba(96, 130, 254, 0.2);
+        color: #fff;
+    }
+
+    /* Alert Chip - Full width */
     .alert-chip {
-        padding: 12px 14px;
-        font-size: 13px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        min-height: 24px;
+        width: 100%;
+        /* Lower z-index than dropdown */
+        z-index: 1;
     }
 
-    .updated-text {
-        font-size: 12px;
+    /* Icon placeholder for alert chip */
+    .alert-chip-icon {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
     }
-}
+
+    /* Updated Text */
+    .alert-chip .updated-text {
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        margin: 0;
+        line-height: 1.2;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Mobile Responsive for Weather Card */
+    @media (max-width: 768px) {
+        .weather-card .card-title-row.big-toggle {
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .location-row {
+            gap: 10px;
+        }
+
+        .weather-card .pill-toggle {
+            padding: 6px 20px;
+            font-size: 14px;
+        }
+
+        .alert-chip {
+            padding: 14px 16px;
+            font-size: 14px;
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .weather-card .field-label {
+            font-size: 15px;
+        }
+
+        .weather-card .field.column {
+            gap: 10px;
+        }
+
+        /* Keep location row horizontal on mobile */
+        .location-row {
+            flex-direction: row;
+            gap: 8px;
+        }
+
+        .text-input {
+            padding: 4px 14px;
+            font-size: 14px;
+        }
+
+        .weather-card .pill-toggle {
+            padding: 6px 16px;
+            font-size: 13px;
+            min-width: 50px;
+        }
+
+        .alert-chip {
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+
+        .updated-text {
+            font-size: 12px;
+        }
+    }
+
+
+    /* ========================= 
+   POWER CUT LOGS CARD STYLES
+   ========================= */
+
+    /* Table Container */
+    .logs-table {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    /* Fixed Header */
+    .logs-header {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 20px;
+        padding: 8px 4px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .logs-header .col {
+        font-size: 14px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+    }
+
+    /* Scrollable Body */
+    .logs-body {
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: y mandatory;
+    }
+
+    .logs-body::-webkit-scrollbar {
+        display: none;
+        /* WebKit */
+    }
+
+    /* Individual Log Row */
+    .logs-row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 20px;
+        padding: 4px 4px;
+        scroll-snap-align: start;
+        /* Snap to each row for smooth scrolling */
+        align-items: center;
+    }
+
+    .logs-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Column Styles */
+    .logs-row .col.ts {
+        font-size: 15px;
+        font-weight: 400;
+        color: rgb(255, 255, 255);
+        letter-spacing: -0.01em;
+    }
+
+    .logs-row .col.details {
+        font-size: 15px;
+        font-weight: 400;
+        color: #FFFFFF;
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Empty State */
+    .logs-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        font-size: 15px;
+        font-weight: 400;
+        padding-top:20px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: -0.01em;
+    }
+
+    /* Hide header when empty */
+    .logs-body .logs-empty~.logs-header,
+    .logs-card:has(.logs-empty) .logs-header {
+        display: none;
+    }
+
+    /* Alternative approach for hiding header when empty (if :has() not supported) */
+    .logs-card.empty .logs-header {
+        display: none;
+    }
+
+    .logs-card.empty .logs-table {
+        height: auto;
+    }
+
+    .logs-card.empty .logs-body {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Ensure exactly 3 rows visible */
+    .logs-body.three-rows {
+        overflow-y: auto;
+    }
+
+    /* Custom scrollbar for better UX (optional) */
+    .logs-body:hover {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+
+    .logs-body:hover::-webkit-scrollbar {
+        display: block;
+        width: 4px;
+    }
+
+    .logs-body:hover::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .logs-body:hover::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .logs-body:hover::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Mobile Responsive for Logs Card */
+    @media (max-width: 768px) {
+
+        .logs-header {
+            grid-template-columns: 120px 1fr;
+            gap: 16px;
+        }
+
+        .logs-row {
+            grid-template-columns: 120px 1fr;
+            gap: 16px;
+        }
+
+        .logs-row .col.ts {
+            font-size: 14px;
+        }
+
+        .logs-row .col.details {
+            font-size: 14px;
+        }
+
+        .logs-header .col {
+            font-size: 13px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .logs-header {
+            grid-template-columns: 100px 1fr;
+            gap: 12px;
+        }
+
+        .logs-row {
+            grid-template-columns: 100px 1fr;
+            gap: 12px;
+        }
+
+        .logs-row .col.ts {
+            font-size: 13px;
+        }
+
+        .logs-row .col.details {
+            font-size: 13px;
+        }
+
+        .logs-header .col {
+            font-size: 12px;
+        }
+
+        .logs-empty {
+            font-size: 14px;
+            padding-top:25px;
+        }
+    }
