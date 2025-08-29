@@ -267,18 +267,23 @@
     flex-shrink: 0;
 }
 
-.mode-switch:hover {
-    background: rgba(96, 130, 254, 0.4);
-    border-color: rgba(96, 130, 254, 0.6);
+.mode-switch.left {
+    background: rgba(96, 130, 254, 0.9);
+    border-color: rgba(96, 130, 254, 1);
 }
 
-.mode-switch.left {
-    background: rgba(96, 130, 254, 0.8);
+.mode-switch.left:hover {
+    background: rgba(96, 130, 254, 1);
     border-color: rgba(96, 130, 254, 1);
 }
 
 .mode-switch.right {
-    background: rgba(96, 130, 254, 0.8);
+    background: rgba(96, 130, 254, 0.9);
+    border-color: rgba(96, 130, 254, 1);
+}
+
+.mode-switch.right:hover {
+    background: rgba(96, 130, 254, 1);
     border-color: rgba(96, 130, 254, 1);
 }
 
@@ -601,13 +606,25 @@
 
 /* Default colors based on content */
 .pill-toggle {
-    background: #31DD9A;
+    background: rgba(49, 221, 154, 0.9);
+    border-color: rgba(49, 221, 154, 1);
     /* Default green */
+}
+
+.pill-toggle:hover {
+    background: rgba(49, 221, 154, 1);
+    border-color: rgba(49, 221, 154, 1);
 }
 
 /* Red variant for OFF/No states */
 .pill-toggle.red {
-    background: #EC6A96;
+    background: rgba(236, 106, 150, 0.9);
+    border-color: rgba(236, 106, 150, 1);
+}
+
+.pill-toggle.red:hover {
+    background: rgba(236, 106, 150, 1);
+    border-color: rgba(236, 106, 150, 1);
 }
 
 /* Mobile Responsive for Manual/Schedule Card */
@@ -724,12 +741,12 @@
 
 /* Active state (algorithm ON) */
 .toggle-switch.right {
-    background: rgba(96, 130, 254, 0.8);
+    background: rgba(96, 130, 254, 0.9);
     border-color: rgba(96, 130, 254, 1);
 }
 
 .toggle-switch.right:hover:not(.disabled) {
-    background: rgba(96, 130, 254, 0.9);
+    background: rgba(96, 130, 254, 1);
     border-color: rgba(96, 130, 254, 1);
 }
 
@@ -762,7 +779,6 @@
     background: #FFFFFF;
     border-radius: 50%;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Knob position for OFF state */
@@ -844,6 +860,11 @@
 
 @media (max-width: 480px) {
 
+    .algo-card .kv {
+        margin-top: 10px;
+        padding-top: 8px;
+    }
+
     .algo-card .kv-key {
         font-size: 15px;
     }
@@ -852,5 +873,276 @@
         padding: 5px 12px;
         font-size: 12px;
         min-width: 80px;
+    }
+}
+
+
+/* ========================= 
+   WEATHER ALERTS CARD STYLES
+   ========================= */
+
+/* Weather Card Specific Styling */
+
+.weather-card .card-title-row.big-toggle {
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.weather-card .card-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+    margin-bottom: 0;
+}
+
+/* Field Layout for Weather Card */
+.weather-card .field.column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* CRITICAL: Create positioning context for dropdown */
+    position: relative;
+    z-index: 2;
+}
+
+/* Location Input Row - All 3 elements in same line */
+.location-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    /* Ensure this creates a positioning context */
+    position: relative;
+    z-index: 3;
+    margin-bottom: 20px;
+}
+
+.weather-card .field-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Text Input Styling */
+.text-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 4px 16px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
+    transition: all 0.3s ease;
+    outline: none;
+    min-width: 0;
+    /* Prevents flex item from overflowing */
+    position: relative;
+    z-index: 4;
+}
+
+.text-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+.text-input:focus {
+    border-color: rgba(96, 130, 254, 0.8);
+    background: rgba(96, 130, 254, 0.1);
+}
+
+.text-input:hover:not(:focus) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.text-input:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+}
+
+/* Set Button */
+.weather-card .pill-toggle {
+    border: none;
+    border-radius: 20px;
+    padding: 6px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Outfit', sans-serif;
+    background: rgba(96, 130, 254, 0.9);
+    border-color: rgba(96, 130, 254, 1);
+    color: #29292A;
+    flex-shrink: 0;
+    white-space: nowrap;
+    position: relative;
+    z-index: 4;
+}
+
+.weather-card .pill-toggle:hover:not(.disabled) {
+    background: rgba(96, 130, 254, 1);
+    border-color: rgba(96, 130, 254, 1);
+}
+
+.weather-card .pill-toggle:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+.suggestion-list-portal {
+    position: fixed;
+    z-index: 2147483647;
+    background: rgba(22, 22, 23, 0.5);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(96, 130, 254, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin-top: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.suggestion-list-portal::-webkit-scrollbar {
+    display: none;
+}
+
+.suggestion-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-item.last {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(96, 130, 254, 0.2);
+    color: #fff;
+}
+
+/* Alert Chip - Full width */
+.alert-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    min-height: 24px;
+    width: 100%;
+    /* Lower z-index than dropdown */
+    z-index: 1;
+}
+
+/* Icon placeholder for alert chip */
+.alert-chip-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+/* Updated Text */
+.alert-chip .updated-text {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Mobile Responsive for Weather Card */
+@media (max-width: 768px) {
+    .weather-card .card-title-row.big-toggle {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .location-row {
+        gap: 10px;
+    }
+
+    .weather-card .pill-toggle {
+        padding: 6px 20px;
+        font-size: 14px;
+    }
+
+    .alert-chip {
+        padding: 14px 16px;
+        font-size: 14px;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .weather-card .field-label {
+        font-size: 15px;
+    }
+
+    .weather-card .field.column {
+        gap: 10px;
+    }
+
+    /* Keep location row horizontal on mobile */
+    .location-row {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .text-input {
+        padding: 4px 14px;
+        font-size: 14px;
+    }
+
+    .weather-card .pill-toggle {
+        padding: 6px 16px;
+        font-size: 13px;
+        min-width: 50px;
+    }
+
+    .alert-chip {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    .updated-text {
+        font-size: 12px;
     }
 }
