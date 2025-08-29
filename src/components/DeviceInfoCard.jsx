@@ -29,7 +29,7 @@ function DeviceInfoCard({ user, device, relayState }) {
   }, [user?.uid, deviceId]);
 
   return (
-    <div className="card">
+    <div className="card info-card">
       <div className="card-title">
         <img src={deviceInfoIcon} alt="Device Info" />
         Device Information
