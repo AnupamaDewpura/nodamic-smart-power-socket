@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import Login from "./components/Login";
 import DevicesList from "./components/DevicesList";
@@ -11,6 +12,7 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [statuses, setStatuses] = useState({});
+  const [connectionLost, setConnectionLost] = useState(!navigator.onLine);
 
   // Persist device selection in localStorage
   useEffect(() => {
@@ -21,10 +23,39 @@ function App() {
     }
   }, [selectedDevice]);
 
-  // Auto-deselect if device goes offline
+  // Track network status + deselect device if client goes offline
+  useEffect(() => {
+    // If we load while offline and a device is open, go back to list
+    if (selectedDevice && navigator.onLine === false) {
+      console.warn("Browser is offline on load; returning to devices list.");
+      setSelectedDevice(null);
+    }
+
+    const handleOnline = () => {
+      setConnectionLost(false);
+      // no auto-select on reconnect; stay on Devices list
+    };
+
+    const handleOffline = () => {
+      setConnectionLost(true);
+      // If user is on a device dashboard, navigate back to the list
+      if (selectedDevice) {
+        console.warn("Browser went offline; returning to devices list.");
+        setSelectedDevice(null);
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [selectedDevice]);
+
+  // Auto-deselect if the **IoT device itself** goes offline
   useEffect(() => {
     if (!selectedDevice) return;
-
     const deviceId = selectedDevice.id;
     const currentStatus = statuses[deviceId]?.toLowerCase?.();
 
@@ -41,7 +72,7 @@ function App() {
   };
 
   return (
-    <div className={`app-container ${!user ? 'login-active' : ''}`}>
+    <div className={`app-container ${!user ? "login-active" : ""}`}>
       {!user && <Login onLogin={setUser} />}
 
       {user && (
@@ -60,6 +91,7 @@ function App() {
               statuses={statuses}
               setStatuses={setStatuses}
               onLogout={handleLogout}
+              connectionLost={connectionLost}  // ✅ used to show "Connection lost"
             />
           )}
         </>
