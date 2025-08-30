@@ -91,7 +91,7 @@ function App() {
               statuses={statuses}
               setStatuses={setStatuses}
               onLogout={handleLogout}
-              connectionLost={connectionLost}  // ✅ used to show "Connection lost"
+              connectionLost={connectionLost}
             />
           )}
         </>
