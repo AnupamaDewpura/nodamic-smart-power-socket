@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, onValue, update, set } from "firebase/database";
-import CustomTimePicker from './CustomTimePicker';
+import CustomTimePicker from "./CustomTimePicker";
 
 /**
  * Props:
@@ -29,16 +29,10 @@ export default function ManualScheduleCard({
   const [modeTab, setModeTab] = useState("MANUAL"); // "MANUAL" | "SCHEDULE"
   const isManual = modeTab === "MANUAL";
 
-  // local schedule state
-  const [enabled, setEnabled] = useState(false);
-  const [startTime, setStartTime] = useState("19:00");
-  const [endTime, setEndTime] = useState("22:00");
-  const [repeat, setRepeat] = useState(true);
-  const [schedulePower, setSchedulePower] = useState("ON"); // "ON" | "OFF"
-
-  const applyingRemote = useRef(false);
-
   // ---------- helpers ----------
+  const pad2 = (n) => String(n).padStart(2, "0");
+
+  // Ensure "HH:MM" zero-padded 24h
   const hhmm = (val) => {
     if (!val || !/^\d{1,2}:\d{1,2}$/.test(val)) return "00:00";
     let [h, m] = val.split(":").map((n) => parseInt(n, 10));
@@ -46,9 +40,39 @@ export default function ManualScheduleCard({
     if (isNaN(m)) m = 0;
     h = Math.max(0, Math.min(23, h));
     m = Math.max(0, Math.min(59, m));
-    const z = (n) => String(n).padStart(2, "0");
-    return `${z(h)}:${z(m)}`;
+    return `${pad2(h)}:${pad2(m)}`;
   };
+
+  // Compute next quarter for start and +1h for end
+  function initialTimes() {
+    const d = new Date();
+    const mins = d.getMinutes();
+    const nextQuarter = Math.ceil(mins / 15) * 15;
+
+    if (nextQuarter === 60) {
+      d.setHours(d.getHours() + 1);
+      d.setMinutes(0, 0, 0);
+    } else {
+      d.setMinutes(nextQuarter, 0, 0);
+    }
+    const start = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+
+    const endDate = new Date(d.getTime() + 60 * 60 * 1000); // +1 hour
+    const end = `${pad2(endDate.getHours())}:${pad2(endDate.getMinutes())}`;
+
+    return { start, end };
+  }
+
+  const { start: initStart, end: initEnd } = initialTimes();
+
+  // ---------- local schedule state ----------
+  const [enabled, setEnabled] = useState(false);
+  const [startTime, setStartTime] = useState(initStart); // e.g., next quarter
+  const [endTime, setEndTime] = useState(initEnd);       // +1 hour from start
+  const [repeat, setRepeat] = useState(true);
+  const [schedulePower, setSchedulePower] = useState("ON"); // "ON" | "OFF"
+
+  const applyingRemote = useRef(false);
 
   const writeSchedule = async (partial) => {
     if (!schedulePath) return;
@@ -57,6 +81,7 @@ export default function ManualScheduleCard({
 
   const ensureScheduleInitialized = async () => {
     if (!schedulePath) return;
+    // Use current local state (already set to smart defaults first time)
     await set(ref(db, schedulePath), {
       enabled: true,
       start: startTime,
@@ -191,17 +216,18 @@ export default function ManualScheduleCard({
                 <button
                   onClick={onToggleRelay}
                   disabled={relayPending || relayState === null}
-                  className={`btn relay ${relayState === "ON" ? "on" : "off"} ${relayPending ? "pending" : ""
-                    }`}
+                  className={`btn relay ${relayState === "ON" ? "on" : "off"} ${
+                    relayPending ? "pending" : ""
+                  }`}
                   type="button"
                 >
                   {relayState === null
                     ? "LOADING..."
                     : relayPending
-                      ? "PENDING..."
-                      : relayState === "ON"
-                        ? "TURN OFF"
-                        : "TURN ON"}
+                    ? "PENDING..."
+                    : relayState === "ON"
+                    ? "TURN OFF"
+                    : "TURN ON"}
                 </button>
               </div>
             </div>
@@ -210,18 +236,12 @@ export default function ManualScheduleCard({
           <div className="schedule-pane">
             <div className="field">
               <label className="field-label">Start Time</label>
-              <CustomTimePicker
-                value={startTime}
-                onChange={onChangeStart}
-              />
+              <CustomTimePicker value={startTime} onChange={onChangeStart} />
             </div>
 
             <div className="field">
               <label className="field-label">End Time</label>
-              <CustomTimePicker
-                value={endTime}
-                onChange={onChangeEnd}
-              />
+              <CustomTimePicker value={endTime} onChange={onChangeEnd} />
             </div>
 
             <div className="field">
