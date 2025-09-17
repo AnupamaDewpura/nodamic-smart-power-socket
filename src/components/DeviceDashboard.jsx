@@ -1,5 +1,5 @@
 // src/components/DeviceDashboard.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import mqttClient from "../services/mqttClient";
 import DeviceInfoCard from "./DeviceInfoCard";
 import ManualScheduleCard from "./ManualScheduleCard";
@@ -10,7 +10,8 @@ import PowerCutLogsCard from "./PowerCutLogsCard";
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
 import { signOut } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { auth, db } from "../services/firebase";
+import { ref, onValue } from "firebase/database";
 
 function DeviceDashboard({ user, device, onBack, onLogout }) {
   // -------- Sidebar UI --------
@@ -31,15 +32,90 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     onLogout?.();
   };
 
+  // ----------------- PRESENCE WATCH (lastSeen → auto-back) -----------------
+  const deviceId = device?.id || "";
+  const [serverOffsetMs, setServerOffsetMs] = useState(0);
+  const [lastSeen, setLastSeen] = useState(0);
+
+  const presenceReadyRef = useRef(false);     // becomes true after first lastSeen snapshot
+  const navigatedRef = useRef(false);         // guard: call onBack once
+  const mountedAtRef = useRef(Date.now());    // local-time holdoff start
+  const offlineStreakRef = useRef(0);         // require 2 consecutive offline ticks
+
+  // Match firmware heartbeat (2s)
+  const HEARTBEAT_MS = 2_000;
+  const STALE_GRACE_MS = 1_000; // tiny cushion
+  const OFFLINE_THRESHOLD_MS = HEARTBEAT_MS * 2 + STALE_GRACE_MS; // ~5s
+
+  // Don’t bounce right away when entering dashboard
+  const NAV_HOLDOFF_MS = 1500; // ~1.5s before we allow auto-back
+
+  // Subscribe to Firebase server time offset
+  useEffect(() => {
+    const offsetRef = ref(db, ".info/serverTimeOffset");
+    const unsub = onValue(offsetRef, (snap) => {
+      const v = snap.val();
+      setServerOffsetMs(typeof v === "number" ? v : 0);
+    });
+    return () => unsub();
+  }, []);
+
+  // Subscribe to this device's lastSeen
+  useEffect(() => {
+    if (!user?.uid || !deviceId) return;
+    navigatedRef.current = false;
+    presenceReadyRef.current = false;
+    offlineStreakRef.current = 0;
+    mountedAtRef.current = Date.now();
+
+    const devLastSeenRef = ref(db, `users/${user.uid}/devices/${deviceId}/lastSeen`);
+    const unsub = onValue(devLastSeenRef, (snap) => {
+      const v = snap.val();
+      setLastSeen(typeof v === "number" ? v : 0);
+      presenceReadyRef.current = true; // we have at least one snapshot
+    });
+    return () => unsub();
+  }, [user?.uid, deviceId]);
+
+  // Recompute Online/Offline every second; navigate back if truly Offline
+  useEffect(() => {
+    const tick = () => {
+      if (!presenceReadyRef.current || navigatedRef.current) return;
+
+      const serverNow = Date.now() + serverOffsetMs;
+      const age = lastSeen ? serverNow - lastSeen : Infinity;
+      const isOnline = age <= OFFLINE_THRESHOLD_MS;
+
+      if (isOnline) {
+        offlineStreakRef.current = 0;
+        return;
+      }
+
+      // Require a short holdoff after entering the page
+      if (Date.now() - mountedAtRef.current < NAV_HOLDOFF_MS) return;
+
+      // Require two consecutive offline ticks to avoid flicker
+      offlineStreakRef.current += 1;
+      if (offlineStreakRef.current >= 2) {
+        navigatedRef.current = true;
+        onBack?.();
+      }
+    };
+
+    tick(); // run immediately
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [lastSeen, serverOffsetMs, onBack]);
+
   // ----------------- RELAY (MQTT) -----------------
   const [relayState, setRelayState] = useState(null);
   const [relayPending, setRelayPending] = useState(false);
 
   useEffect(() => {
-    if (!device?.id) return;
+    if (!deviceId) return;
 
-    const relayStatusTopic = `${device.id}/relay/status`;
-    const relayGetTopic = `${device.id}/relay/get`;
+    const relayStatusTopic = `${deviceId}/relay/status`;
+    const relayGetTopic = `${deviceId}/relay/get`;
 
     mqttClient.subscribe(relayStatusTopic, (err) => {
       if (err) console.error("Subscribe error:", err);
@@ -60,32 +136,26 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       mqttClient.unsubscribe(relayStatusTopic);
       mqttClient.off("message", handleMessage);
     };
-  }, [device?.id]);
+  }, [deviceId]);
 
   const toggleRelay = () => {
-    if (relayPending || relayState === null) return;
+    if (relayPending || relayState === null || !deviceId) return;
     const newState = relayState === "ON" ? "OFF" : "ON";
-    const setTopic = `${device.id}/relay/set`;
+    const setTopic = `${deviceId}/relay/set`;
     mqttClient.publish(setTopic, newState);
     setRelayPending(true);
 
-    // --- watchdog: clear pending if no MQTT response within 10s ---
+    // watchdog: clear pending if no MQTT response within 10s
     setTimeout(() => {
-      setRelayPending((prev) => {
-        if (prev) {
-          console.warn("Relay toggle timed out, keeping previous state");
-          return false; // stop showing "PENDING..."
-        }
-        return prev;
-      });
+      setRelayPending((prev) => (prev ? false : prev));
     }, 10000);
   };
 
   const requeryRelayStatus = () => {
-    if (!device?.id) return;
+    if (!deviceId) return;
     setRelayState(null);
     setRelayPending(false);
-    const relayGetTopic = `${device.id}/relay/get`;
+    const relayGetTopic = `${deviceId}/relay/get`;
     mqttClient.publish(relayGetTopic, "STATUS");
   };
 
@@ -94,10 +164,10 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
   const [algorithmPending, setAlgorithmPending] = useState(false);
 
   useEffect(() => {
-    if (!device?.id) return;
+    if (!deviceId) return;
 
-    const algoStatusTopic = `${device.id}/algorithm/status`;
-    const algoGetTopic = `${device.id}/algorithm/get`;
+    const algoStatusTopic = `${deviceId}/algorithm/status`;
+    const algoGetTopic = `${deviceId}/algorithm/get`;
 
     mqttClient.subscribe(algoStatusTopic, (err) => {
       if (err) console.error("Subscribe error:", err);
@@ -118,24 +188,18 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       mqttClient.unsubscribe(algoStatusTopic);
       mqttClient.off("message", handleMessage);
     };
-  }, [device?.id]);
+  }, [deviceId]);
 
   const toggleAlgorithm = () => {
-    if (algorithmPending || algorithmState === null) return;
+    if (algorithmPending || algorithmState === null || !deviceId) return;
     const newState = algorithmState === "ON" ? "OFF" : "ON";
-    const setTopic = `${device.id}/algorithm/set`;
+    const setTopic = `${deviceId}/algorithm/set`;
     mqttClient.publish(setTopic, newState);
     setAlgorithmPending(true);
 
-    // --- watchdog: clear pending if no MQTT response within 10s ---
+    // watchdog: clear pending if no MQTT response within 10s
     setTimeout(() => {
-      setAlgorithmPending((prev) => {
-        if (prev) {
-          console.warn("Algorithm toggle timed out, keeping previous state");
-          return false;
-        }
-        return prev;
-      });
+      setAlgorithmPending((prev) => (prev ? false : prev));
     }, 10000);
   };
 
@@ -195,9 +259,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       <div className="main-content">
         <div className="devices-header">
           <button className="dashboard-back-button" onClick={onBack}>Go Back</button>
-          <h1 className="devices-title">
-            Dashboard
-          </h1>
+        <h1 className="devices-title">Dashboard</h1>
         </div>
 
         <div className="devices-container">
@@ -232,9 +294,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       </div>
 
       {/* Copy notification */}
-      {copied && (
-        <div className="copy-notification">User ID copied to clipboard</div>
-      )}
+      {copied && <div className="copy-notification">User ID copied to clipboard</div>}
 
       {/* Mobile footer */}
       <div className="mobile-footer-brand">
