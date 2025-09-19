@@ -1,34 +1,28 @@
 // src/components/DevicesList.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { db, auth } from "../services/firebase";
 import { ref, onValue } from "firebase/database";
 import DeviceCard from "./DeviceCard";
 import { signOut } from "firebase/auth";
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
+import mqttClient from "../services/mqttClient";
 
 function DevicesList({ user, onSelectDevice, statuses, setStatuses, onLogout, connectionLost }) {
   const [devices, setDevices] = useState({});
   const [copied, setCopied] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [serverOffsetMs, setServerOffsetMs] = useState(0);
 
-  // Match firmware heartbeat (2s) for fastest offline flip
+  // Presence thresholds (match firmware 2s heartbeat)
   const HEARTBEAT_MS = 2_000;
-  const STALE_GRACE_MS = 1_000; // tiny cushion for jitter
+  const STALE_GRACE_MS = 1_000;
   const OFFLINE_THRESHOLD_MS = HEARTBEAT_MS * 2 + STALE_GRACE_MS; // ~5s
 
-  // Use Firebase server time (not browser time)
-  useEffect(() => {
-    const offsetRef = ref(db, ".info/serverTimeOffset");
-    const unsub = onValue(offsetRef, (snap) => {
-      const v = snap.val();
-      setServerOffsetMs(typeof v === "number" ? v : 0);
-    });
-    return () => unsub();
-  }, []);
+  // Track lastSeen timestamps (epoch-ms) per device from MQTT
+  const lastSeenMapRef = useRef({});     // { [deviceId]: number }
+  const presenceMapRef = useRef({});     // { [deviceId]: "online"|"offline"|undefined }
 
-  // Subscribe to user's devices once
+  // Subscribe to user's devices once (still via Firebase)
   useEffect(() => {
     if (!user) return;
     const devicesRef = ref(db, `users/${user.uid}/devices`);
@@ -38,23 +32,84 @@ function DevicesList({ user, onSelectDevice, statuses, setStatuses, onLogout, co
     return () => unsubscribeDevices();
   }, [user]);
 
-  // Recompute statuses every second using server time and lastSeen only
+  // Subscribe to MQTT topics for each device (presence + heartbeat)
+  useEffect(() => {
+    const ids = Object.keys(devices || {});
+    if (ids.length === 0) return;
+
+    const topics = [];
+    ids.forEach((deviceId) => {
+      topics.push(`${deviceId}/presence`);
+      topics.push(`${deviceId}/lastSeen`);
+    });
+
+    // Subscribe all needed topics
+    topics.forEach((t) => {
+      mqttClient.subscribe(t, (err) => {
+        if (err) console.error("Subscribe error:", t, err);
+      });
+    });
+
+    const handleMessage = (topic, message) => {
+      const payload = message.toString().trim().toLowerCase();
+
+      // presence
+      const pMatch = topic.match(/^(.+)\/presence$/);
+      if (pMatch) {
+        const deviceId = pMatch[1];
+        presenceMapRef.current[deviceId] = payload === "online" ? "online" : "offline";
+        return;
+      }
+
+      // lastSeen
+      const lMatch = topic.match(/^(.+)\/lastSeen$/);
+      if (lMatch) {
+        const deviceId = lMatch[1];
+        const ts = parseInt(payload, 10);
+        if (!Number.isNaN(ts)) {
+          lastSeenMapRef.current[deviceId] = ts;
+        }
+        return;
+      }
+    };
+
+    mqttClient.on("message", handleMessage);
+
+    return () => {
+      // Unsubscribe and detach listener
+      topics.forEach((t) => mqttClient.unsubscribe(t));
+      mqttClient.off("message", handleMessage);
+      // keep maps; they’ll repopulate on re-subscribe due to retained messages
+    };
+  }, [devices]);
+
+  // Compute statuses every second from MQTT (heartbeat first, presence fallback)
   useEffect(() => {
     const tick = () => {
-      const serverNow = Date.now() + serverOffsetMs;
+      const now = Date.now();
       const next = {};
-      Object.entries(devices || {}).forEach(([deviceId, device]) => {
-        const lastSeen = typeof device?.lastSeen === "number" ? device.lastSeen : 0;
-        const age = lastSeen ? serverNow - lastSeen : Infinity;
-        next[deviceId] = age <= OFFLINE_THRESHOLD_MS ? "Online" : "Offline";
+      Object.keys(devices || {}).forEach((deviceId) => {
+        const lastSeen = lastSeenMapRef.current[deviceId];  // epoch ms
+        let state = "Offline";
+
+        if (typeof lastSeen === "number") {
+          const age = now - lastSeen;
+          state = age <= OFFLINE_THRESHOLD_MS ? "Online" : "Offline";
+        } else {
+          // Fallback to presence retained value if we’ve never seen lastSeen
+          const p = presenceMapRef.current[deviceId];
+          if (p === "online") state = "Online";
+          else if (p === "offline") state = "Offline";
+        }
+        next[deviceId] = state;
       });
       setStatuses(next);
     };
 
-    tick(); // run immediately
+    tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [devices, serverOffsetMs, setStatuses]);
+  }, [devices, setStatuses]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(user.uid);

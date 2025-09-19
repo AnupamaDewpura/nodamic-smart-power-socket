@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, onValue } from "firebase/database";
+import mqttClient from "../services/mqttClient";
 import deviceInfoIcon from "../assets/info-icon.svg";
 
 /**
@@ -13,8 +14,10 @@ import deviceInfoIcon from "../assets/info-icon.svg";
 function DeviceInfoCard({ user, device, relayState }) {
   const deviceId = device?.id || "";
   const [fbName, setFbName] = useState(device?.name || deviceId);
-  const [lastSeen, setLastSeen] = useState(0);
-  const [serverOffsetMs, setServerOffsetMs] = useState(0);
+
+  // MQTT presence/heartbeat-driven status
+  const [lastSeenMs, setLastSeenMs] = useState(0);
+  const [presence, setPresence] = useState("offline"); // "online"|"offline"
   const [fbStatus, setFbStatus] = useState("Offline");
 
   // Match firmware (heartbeat every 2s)
@@ -22,39 +25,69 @@ function DeviceInfoCard({ user, device, relayState }) {
   const STALE_GRACE_MS = 1_000; // tiny cushion for jitter
   const OFFLINE_THRESHOLD_MS = HEARTBEAT_MS * 2 + STALE_GRACE_MS; // ~5s
 
-  // Subscribe to server time offset (use server clock, not browser clock)
-  useEffect(() => {
-    const offsetRef = ref(db, ".info/serverTimeOffset");
-    const unsub = onValue(offsetRef, (snap) => {
-      const v = snap.val();
-      setServerOffsetMs(typeof v === "number" ? v : 0);
-    });
-    return () => unsub();
-  }, []);
-
-  // Subscribe to this device node (read name + lastSeen)
+  // Subscribe to this device node for the name (Firebase only for metadata)
   useEffect(() => {
     if (!user?.uid || !deviceId) return;
     const devRef = ref(db, `users/${user.uid}/devices/${deviceId}`);
     const unsub = onValue(devRef, (snap) => {
       const data = snap.val() || {};
       setFbName(data.name || deviceId);
-      setLastSeen(typeof data.lastSeen === "number" ? data.lastSeen : 0);
     });
     return () => unsub();
   }, [user?.uid, deviceId]);
 
-  // Recompute status every second from lastSeen + server time
+  // Subscribe to MQTT presence + lastSeen
+  useEffect(() => {
+    if (!deviceId) return;
+
+    const presenceTopic = `${deviceId}/presence`;
+    const lastSeenTopic = `${deviceId}/lastSeen`;
+
+    mqttClient.subscribe(presenceTopic, (err) => {
+      if (err) console.error("Subscribe error:", presenceTopic, err);
+    });
+    mqttClient.subscribe(lastSeenTopic, (err) => {
+      if (err) console.error("Subscribe error:", lastSeenTopic, err);
+    });
+
+    const handleMessage = (topic, message) => {
+      if (topic === presenceTopic) {
+        const val = message.toString().trim().toLowerCase();
+        setPresence(val === "online" ? "online" : "offline");
+      } else if (topic === lastSeenTopic) {
+        const ts = parseInt(message.toString(), 10);
+        if (!Number.isNaN(ts)) setLastSeenMs(ts);
+      }
+    };
+
+    mqttClient.on("message", handleMessage);
+
+    return () => {
+      mqttClient.unsubscribe(presenceTopic);
+      mqttClient.unsubscribe(lastSeenTopic);
+      mqttClient.off("message", handleMessage);
+    };
+  }, [deviceId]);
+
+  // Recompute status every second from lastSeen (preferred) + presence fallback
   useEffect(() => {
     const compute = () => {
-      const serverNow = Date.now() + serverOffsetMs;
-      const age = lastSeen ? serverNow - lastSeen : Infinity;
-      setFbStatus(age <= OFFLINE_THRESHOLD_MS ? "Online" : "Offline");
+      const now = Date.now();
+      let isOnline = false;
+
+      if (typeof lastSeenMs === "number" && lastSeenMs > 0) {
+        const age = now - lastSeenMs;
+        isOnline = age <= OFFLINE_THRESHOLD_MS;
+      } else {
+        isOnline = presence === "online";
+      }
+      setFbStatus(isOnline ? "Online" : "Offline");
     };
-    compute(); // run immediately
+
+    compute();
     const id = setInterval(compute, 1000);
     return () => clearInterval(id);
-  }, [lastSeen, serverOffsetMs]);
+  }, [lastSeenMs, presence]);
 
   return (
     <div className="card info-card">

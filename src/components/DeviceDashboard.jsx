@@ -10,8 +10,7 @@ import PowerCutLogsCard from "./PowerCutLogsCard";
 import wordmark from "../assets/wordmark.svg";
 import footerWordmark from "../assets/footer-wordmark.svg";
 import { signOut } from "firebase/auth";
-import { auth, db } from "../services/firebase";
-import { ref, onValue } from "firebase/database";
+import { auth } from "../services/firebase";
 
 function DeviceDashboard({ user, device, onBack, onLogout }) {
   // -------- Sidebar UI --------
@@ -32,69 +31,88 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     onLogout?.();
   };
 
-  // ----------------- PRESENCE WATCH (lastSeen → auto-back) -----------------
+  // ----------------- PRESENCE via MQTT -----------------
   const deviceId = device?.id || "";
-  const [serverOffsetMs, setServerOffsetMs] = useState(0);
-  const [lastSeen, setLastSeen] = useState(0);
+  const [lastSeenMs, setLastSeenMs] = useState(0);
+  const [presence, setPresence] = useState("offline"); // "online"|"offline"
 
-  const presenceReadyRef = useRef(false);     // becomes true after first lastSeen snapshot
-  const navigatedRef = useRef(false);         // guard: call onBack once
-  const mountedAtRef = useRef(Date.now());    // local-time holdoff start
-  const offlineStreakRef = useRef(0);         // require 2 consecutive offline ticks
+  const presenceReadyRef = useRef(false);
+  const navigatedRef = useRef(false);
+  const mountedAtRef = useRef(Date.now());
+  const offlineStreakRef = useRef(0);
 
   // Match firmware heartbeat (2s)
   const HEARTBEAT_MS = 2_000;
   const STALE_GRACE_MS = 1_000; // tiny cushion
   const OFFLINE_THRESHOLD_MS = HEARTBEAT_MS * 2 + STALE_GRACE_MS; // ~5s
+  const NAV_HOLDOFF_MS = 1500; // ~1.5s before allowing auto-back
 
-  // Don’t bounce right away when entering dashboard
-  const NAV_HOLDOFF_MS = 1500; // ~1.5s before we allow auto-back
-
-  // Subscribe to Firebase server time offset
   useEffect(() => {
-    const offsetRef = ref(db, ".info/serverTimeOffset");
-    const unsub = onValue(offsetRef, (snap) => {
-      const v = snap.val();
-      setServerOffsetMs(typeof v === "number" ? v : 0);
-    });
-    return () => unsub();
-  }, []);
-
-  // Subscribe to this device's lastSeen
-  useEffect(() => {
-    if (!user?.uid || !deviceId) return;
+    if (!deviceId) return;
     navigatedRef.current = false;
     presenceReadyRef.current = false;
     offlineStreakRef.current = 0;
     mountedAtRef.current = Date.now();
+    setLastSeenMs(0);
+    setPresence("offline");
 
-    const devLastSeenRef = ref(db, `users/${user.uid}/devices/${deviceId}/lastSeen`);
-    const unsub = onValue(devLastSeenRef, (snap) => {
-      const v = snap.val();
-      setLastSeen(typeof v === "number" ? v : 0);
-      presenceReadyRef.current = true; // we have at least one snapshot
+    const topics = [`${deviceId}/lastSeen`, `${deviceId}/presence`];
+
+    topics.forEach((t) => {
+      mqttClient.subscribe(t, (err) => {
+        if (err) console.error("Subscribe error:", t, err);
+      });
     });
-    return () => unsub();
-  }, [user?.uid, deviceId]);
 
-  // Recompute Online/Offline every second; navigate back if truly Offline
+    const handleMessage = (topic, message) => {
+      if (topic === `${deviceId}/lastSeen`) {
+        const ts = parseInt(message.toString(), 10);
+        if (!Number.isNaN(ts)) {
+          setLastSeenMs(ts);
+          presenceReadyRef.current = true;
+        }
+      } else if (topic === `${deviceId}/presence`) {
+        const val = message.toString().trim().toLowerCase();
+        setPresence(val === "online" ? "online" : "offline");
+        presenceReadyRef.current = true;
+      }
+    };
+
+    mqttClient.on("message", handleMessage);
+
+    // Request current statuses (retained will fire anyway)
+    mqttClient.publish(`${deviceId}/relay/get`, "STATUS");
+    mqttClient.publish(`${deviceId}/algorithm/get`, "STATUS");
+
+    return () => {
+      topics.forEach((t) => mqttClient.unsubscribe(t));
+      mqttClient.off?.("message", handleMessage) || mqttClient.removeListener?.("message", handleMessage);
+    };
+  }, [deviceId]);
+
   useEffect(() => {
     const tick = () => {
       if (!presenceReadyRef.current || navigatedRef.current) return;
 
-      const serverNow = Date.now() + serverOffsetMs;
-      const age = lastSeen ? serverNow - lastSeen : Infinity;
-      const isOnline = age <= OFFLINE_THRESHOLD_MS;
+      const now = Date.now();
+
+      // Prefer fast heartbeat computation
+      let isOnline = false;
+      if (typeof lastSeenMs === "number" && lastSeenMs > 0) {
+        const age = now - lastSeenMs;
+        isOnline = age <= OFFLINE_THRESHOLD_MS;
+      } else {
+        // fallback to presence retained
+        isOnline = presence === "online";
+      }
 
       if (isOnline) {
         offlineStreakRef.current = 0;
         return;
       }
 
-      // Require a short holdoff after entering the page
       if (Date.now() - mountedAtRef.current < NAV_HOLDOFF_MS) return;
 
-      // Require two consecutive offline ticks to avoid flicker
       offlineStreakRef.current += 1;
       if (offlineStreakRef.current >= 2) {
         navigatedRef.current = true;
@@ -105,7 +123,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
     tick(); // run immediately
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [lastSeen, serverOffsetMs, onBack]);
+  }, [lastSeenMs, presence, onBack]);
 
   // ----------------- RELAY (MQTT) -----------------
   const [relayState, setRelayState] = useState(null);
@@ -134,7 +152,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
 
     return () => {
       mqttClient.unsubscribe(relayStatusTopic);
-      mqttClient.off("message", handleMessage);
+      mqttClient.off?.("message", handleMessage) || mqttClient.removeListener?.("message", handleMessage);
     };
   }, [deviceId]);
 
@@ -186,7 +204,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
 
     return () => {
       mqttClient.unsubscribe(algoStatusTopic);
-      mqttClient.off("message", handleMessage);
+      mqttClient.off?.("message", handleMessage) || mqttClient.removeListener?.("message", handleMessage);
     };
   }, [deviceId]);
 
@@ -259,7 +277,7 @@ function DeviceDashboard({ user, device, onBack, onLogout }) {
       <div className="main-content">
         <div className="devices-header">
           <button className="dashboard-back-button" onClick={onBack}>Go Back</button>
-        <h1 className="devices-title">Dashboard</h1>
+          <h1 className="devices-title">Dashboard</h1>
         </div>
 
         <div className="devices-container">

@@ -102,7 +102,7 @@ const CustomTimePicker = ({ value, onChange, className = "" }) => {
 
   // Generate minute options (00, 15, 30, 45)
   const minuteOptions = [];
-  for (let i = 0; i < 60; i += 15) {
+  for (let i = 0; i < 60; i += 5) {
     minuteOptions.push(String(i).padStart(2, "0"));
   }
 
