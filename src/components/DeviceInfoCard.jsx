@@ -20,12 +20,15 @@ function DeviceInfoCard({ user, device, relayState }) {
   const [presence, setPresence] = useState("offline"); // "online"|"offline"
   const [fbStatus, setFbStatus] = useState("Offline");
 
-  // Match firmware (heartbeat every 2s)
+  // Power status from `{deviceId}/power/status` -> "HAS" | "NO"
+  const [powerState, setPowerState] = useState(null); // "HAS POWER" | "NO POWER" | null
+
+  // Heartbeat thresholds
   const HEARTBEAT_MS = 2_000;
-  const STALE_GRACE_MS = 1_000; // tiny cushion for jitter
+  const STALE_GRACE_MS = 1_000;
   const OFFLINE_THRESHOLD_MS = HEARTBEAT_MS * 2 + STALE_GRACE_MS; // ~5s
 
-  // Subscribe to this device node for the name (Firebase only for metadata)
+  // Subscribe to this device node for the name (Firebase metadata)
   useEffect(() => {
     if (!user?.uid || !deviceId) return;
     const devRef = ref(db, `users/${user.uid}/devices/${deviceId}`);
@@ -69,7 +72,7 @@ function DeviceInfoCard({ user, device, relayState }) {
     };
   }, [deviceId]);
 
-  // Recompute status every second from lastSeen (preferred) + presence fallback
+  // Recompute online/offline every second
   useEffect(() => {
     const compute = () => {
       const now = Date.now();
@@ -88,6 +91,44 @@ function DeviceInfoCard({ user, device, relayState }) {
     const id = setInterval(compute, 1000);
     return () => clearInterval(id);
   }, [lastSeenMs, presence]);
+
+  // --- Power status subscribe & initial query ---
+  useEffect(() => {
+    if (!deviceId) return;
+
+    const powerStatusTopic = `${deviceId}/power/status`;
+    const powerGetTopic = `${deviceId}/power/get`;
+
+    mqttClient.subscribe(powerStatusTopic, (err) => {
+      if (err) console.error("Subscribe error:", powerStatusTopic, err);
+    });
+
+    const handleMessage = (topic, message) => {
+      if (topic !== powerStatusTopic) return;
+      const raw = message.toString().trim().toUpperCase();
+
+      // EXACT protocol: "HAS" or "NO"
+      if (raw === "HAS") setPowerState("HAS POWER");
+      else if (raw === "NO") setPowerState("NO POWER");
+      else setPowerState(null); // unknown payload -> keep loading
+    };
+
+    mqttClient.on("message", handleMessage);
+
+    // Ask device for current power status when card mounts
+    mqttClient.publish(powerGetTopic, "STATUS");
+
+    return () => {
+      mqttClient.unsubscribe(powerStatusTopic);
+      mqttClient.off("message", handleMessage);
+    };
+  }, [deviceId]);
+
+  // Combined chip logic
+  const bothKnown = relayState !== null && powerState !== null;
+  const combinedText = bothKnown ? `${relayState} | ${powerState}` : "Loading…";
+  const isGood = bothKnown && relayState === "ON" && powerState === "HAS POWER";
+  const badgeClass = bothKnown ? (isGood ? "ok" : "err") : "muted";
 
   return (
     <div className="card info-card">
@@ -115,13 +156,7 @@ function DeviceInfoCard({ user, device, relayState }) {
 
       <div className="kv">
         <div className="kv-key">Socket Status</div>
-        <div
-          className={`badge ${
-            relayState === "ON" ? "ok" : relayState === "OFF" ? "warn" : "muted"
-          }`}
-        >
-          {relayState === null ? "Loading…" : relayState}
-        </div>
+        <div className={`badge ${badgeClass}`}>{combinedText}</div>
       </div>
     </div>
   );

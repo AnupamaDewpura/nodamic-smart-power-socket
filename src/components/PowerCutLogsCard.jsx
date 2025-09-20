@@ -14,6 +14,9 @@ export default function PowerCutLogsCard({ user, device }) {
   const [rows, setRows] = useState([]);
   const trimmingRef = useRef(false);
 
+  // track first row id to detect new top log
+  const prevFirstRef = useRef(null);
+
   // refs to measure heights
   const bodyRef = useRef(null);
   const tableRef = useRef(null);
@@ -88,18 +91,15 @@ export default function PowerCutLogsCard({ user, device }) {
       const rect = rowEls[i].getBoundingClientRect();
       total += rect.height;
     }
-    // Account for possible sub-pixel values
     setBodyMaxHeight(Math.ceil(total));
   };
 
-  // Recompute on:
-  // - rows change
-  // - window resize
-  // - any table resize (via ResizeObserver)
+  // Recompute on rows change
   useEffect(() => {
     recomputeBodyHeight();
   }, [rows]);
 
+  // Resize observers & font load
   useEffect(() => {
     const ro = new ResizeObserver(() => {
       recomputeBodyHeight();
@@ -110,7 +110,6 @@ export default function PowerCutLogsCard({ user, device }) {
     const onWinResize = () => recomputeBodyHeight();
     window.addEventListener("resize", onWinResize);
 
-    // Recompute after fonts load (prevents off-by-one when fonts swap)
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => recomputeBodyHeight());
     }
@@ -121,6 +120,24 @@ export default function PowerCutLogsCard({ user, device }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-scroll to top when a *newer first log* appears
+  useEffect(() => {
+    const firstId = rows[0]?.id || null;
+
+    // If there's a new first row (newest log), jump to top.
+    if (firstId && prevFirstRef.current && prevFirstRef.current !== firstId) {
+      // Use setTimeout to ensure rows are rendered before scrolling
+      setTimeout(() => {
+        if (bodyRef.current) {
+          bodyRef.current.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }, 0);
+    }
+
+    // Initialize or update the tracker
+    if (firstId) prevFirstRef.current = firstId;
+  }, [rows]);
 
   return (
     <div className="card logs-card">
