@@ -1,8 +1,12 @@
 // src/components/ManualScheduleCard.jsx
 import { useEffect, useRef, useState } from "react";
-import { db } from "../services/firebase";
-import { ref, onValue, update, set } from "firebase/database";
 import CustomTimePicker from "./CustomTimePicker";
+import {
+  pubScheduleSet,
+  pubScheduleEnable,
+  reqScheduleStatus,
+  subScheduleStatus,
+} from "../services/scheduleMqtt";
 
 /**
  * Props:
@@ -21,18 +25,11 @@ export default function ManualScheduleCard({
   onEnterManual,
 }) {
   const deviceId = device?.id;
-  const schedulePath =
-    user?.uid && deviceId
-      ? `users/${user.uid}/devices/${deviceId}/schedule`
-      : null;
 
   const [modeTab, setModeTab] = useState("MANUAL"); // "MANUAL" | "SCHEDULE"
   const isManual = modeTab === "MANUAL";
 
-  // ---------- helpers ----------
   const pad2 = (n) => String(n).padStart(2, "0");
-
-  // Ensure "HH:MM" zero-padded 24h
   const hhmm = (val) => {
     if (!val || !/^\d{1,2}:\d{1,2}$/.test(val)) return "00:00";
     let [h, m] = val.split(":").map((n) => parseInt(n, 10));
@@ -43,12 +40,10 @@ export default function ManualScheduleCard({
     return `${pad2(h)}:${pad2(m)}`;
   };
 
-  // Compute next quarter for start and +1h for end
   function initialTimes() {
     const d = new Date();
     const mins = d.getMinutes();
     const nextQuarter = Math.ceil(mins / 15) * 15;
-
     if (nextQuarter === 60) {
       d.setHours(d.getHours() + 1);
       d.setMinutes(0, 0, 0);
@@ -56,90 +51,116 @@ export default function ManualScheduleCard({
       d.setMinutes(nextQuarter, 0, 0);
     }
     const start = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-
-    const endDate = new Date(d.getTime() + 60 * 60 * 1000); // +1 hour
+    const endDate = new Date(d.getTime() + 60 * 60 * 1000);
     const end = `${pad2(endDate.getHours())}:${pad2(endDate.getMinutes())}`;
-
     return { start, end };
   }
 
   const { start: initStart, end: initEnd } = initialTimes();
 
-  // ---------- local schedule state ----------
+  // Local schedule state (mirrors device)
   const [enabled, setEnabled] = useState(false);
-  const [startTime, setStartTime] = useState(initStart); // e.g., next quarter
-  const [endTime, setEndTime] = useState(initEnd);       // +1 hour from start
+  const [startTime, setStartTime] = useState(initStart);
+  const [endTime, setEndTime] = useState(initEnd);
   const [repeat, setRepeat] = useState(true);
   const [schedulePower, setSchedulePower] = useState("ON"); // "ON" | "OFF"
+  const [inside, setInside] = useState(false);              // from device
 
+  // Prevent write-through loops
   const applyingRemote = useRef(false);
 
-  const writeSchedule = async (partial) => {
-    if (!schedulePath) return;
-    await update(ref(db, schedulePath), partial);
-  };
+  // Optimistic guard: ignore conflicting status during transitions
+  const ignoreEnabledUntil = useRef(0);          // ms timestamp
+  const desiredEnabledRef = useRef(null);        // true/false for the current toggle, or null
 
-  const ensureScheduleInitialized = async () => {
-    if (!schedulePath) return;
-    // Use current local state (already set to smart defaults first time)
-    await set(ref(db, schedulePath), {
-      enabled: true,
+  function getTzOffsetMin() {
+    return -new Date().getTimezoneOffset(); // e.g., +330 for Asia/Colombo
+  }
+
+  // Publish schedule config (retained) — NOTE: no "enabled" inside
+  const pushSchedule = (partial = {}) => {
+    if (!deviceId) return;
+    const cfg = {
       start: startTime,
       end: endTime,
       repeat,
       mode: schedulePower,
-    });
+      tz_offset_min: getTzOffsetMin(),
+      ...partial,
+    };
+    pubScheduleSet(deviceId, cfg);
   };
 
-  // ---------- subscribe to /schedule (also set initial tab from enabled) ----------
+  // Subscribe to retained /schedule/status
   useEffect(() => {
-    if (!schedulePath) return;
-
-    const off = onValue(ref(db, schedulePath), (snap) => {
-      const data = snap.val();
-
-      // If there's no schedule node yet, default to MANUAL
-      if (!data) {
-        setModeTab("MANUAL");
-        return;
-      }
-
+    if (!deviceId) return;
+    const unsub = subScheduleStatus(deviceId, (data) => {
       applyingRemote.current = true;
       try {
+        // Enabled/modeTab with optimistic guard
         if (typeof data.enabled === "boolean") {
-          setEnabled(data.enabled);
-          setModeTab(data.enabled ? "SCHEDULE" : "MANUAL");
+          const now = Date.now();
+          const inGuard = now < ignoreEnabledUntil.current;
+          const desired = desiredEnabledRef.current;
+
+          // If we're in a transition and this status contradicts what we just commanded,
+          // ignore it to prevent UI flicker.
+          if (inGuard && desired !== null && data.enabled !== desired) {
+            // ignore this conflicting update
+          } else {
+            setEnabled(data.enabled);
+            setModeTab(data.enabled ? "SCHEDULE" : "MANUAL");
+            // If this matches our desired state, clear the guard.
+            if (desired !== null && data.enabled === desired) {
+              ignoreEnabledUntil.current = 0;
+              desiredEnabledRef.current = null;
+            }
+          }
         }
+
         if (typeof data.start === "string") setStartTime(hhmm(data.start));
         if (typeof data.end === "string") setEndTime(hhmm(data.end));
         if (typeof data.repeat === "boolean") setRepeat(data.repeat);
         if (data.mode === "ON" || data.mode === "OFF") setSchedulePower(data.mode);
+        if (typeof data.inside === "boolean") setInside(data.inside);
       } finally {
         setTimeout(() => (applyingRemote.current = false), 0);
       }
     });
 
-    return () => off();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schedulePath]);
+    // Initial kick so we have something before the device changes anything
+    reqScheduleStatus(deviceId);
 
-  // ---------- tab switching ----------
+    return () => unsub();
+  }, [deviceId]); // eslint-disable-line
+
+  // Mode switching
   const switchToManual = async () => {
+    // Start optimistic guard (ignore stray "enabled:true" for a moment)
+    desiredEnabledRef.current = false;
+    ignoreEnabledUntil.current = Date.now() + 1500;
+
     setModeTab("MANUAL");
-    onEnterManual?.(); // re-query relay + show Loading
-    if (schedulePath) await writeSchedule({ enabled: false });
+    onEnterManual?.();
+    setEnabled(false);
+    pubScheduleEnable(deviceId, false);
   };
 
   const switchToSchedule = async () => {
+    // Start optimistic guard (ignore a transient "enabled:false")
+    desiredEnabledRef.current = true;
+    ignoreEnabledUntil.current = Date.now() + 2000;
+
     setModeTab("SCHEDULE");
-    if (schedulePath) {
-      await ensureScheduleInitialized().catch(async () => {
-        // if node exists already, just enable it
-        await writeSchedule({ enabled: true });
-      });
-      // ensure enabled true on entry
-      await writeSchedule({ enabled: true });
-    }
+    setEnabled(true);
+
+    // 1) Push times/mode/tz first (retained) — device may publish status with enabled:false
+    pushSchedule();
+
+    // 2) Now enable (device snapshots preserved manual state and publishes enabled:true)
+    pubScheduleEnable(deviceId, true);
+
+    // (Optional) No /get here—avoids forcing an immediate stale status publish
   };
 
   const toggleHeaderSwitch = async () => {
@@ -147,39 +168,33 @@ export default function ManualScheduleCard({
     else await switchToManual();
   };
 
-  // ---------- field handlers (write-through) ----------
+  // Field handlers (MQTT write-through)
   const onChangeStart = async (val) => {
     const v = hhmm(val);
     setStartTime(v);
-    if (!applyingRemote.current) await writeSchedule({ start: v });
+    if (!applyingRemote.current) pushSchedule({ start: v });
   };
-
   const onChangeEnd = async (val) => {
     const v = hhmm(val);
     setEndTime(v);
-    if (!applyingRemote.current) await writeSchedule({ end: v });
+    if (!applyingRemote.current) pushSchedule({ end: v });
   };
-
   const onToggleRepeat = async () => {
     const v = !repeat;
     setRepeat(v);
-    if (!applyingRemote.current) await writeSchedule({ repeat: v });
+    if (!applyingRemote.current) pushSchedule({ repeat: v });
   };
-
   const onToggleMode = async () => {
     const v = schedulePower === "ON" ? "OFF" : "ON";
     setSchedulePower(v);
-    if (!applyingRemote.current) await writeSchedule({ mode: v });
+    if (!applyingRemote.current) pushSchedule({ mode: v });
   };
 
   return (
     <div className="card manual-card">
-      {/* ===== Title row: Manual Control | [pill switch] | Schedule ===== */}
+      {/* Title row */}
       <div className="card-title-row big-toggle">
-        <span className={`title-label ${isManual ? "active" : "muted"}`}>
-          Manual
-        </span>
-
+        <span className={`title-label ${isManual ? "active" : "muted"}`}>Manual</span>
         <button
           type="button"
           role="switch"
@@ -189,20 +204,20 @@ export default function ManualScheduleCard({
         >
           <span className="knob" />
         </button>
-
-        <span className={`title-label ${!isManual ? "active" : "muted"}`}>
-          Schedule
-        </span>
+        <span className={`title-label ${!isManual ? "active" : "muted"}`}>Schedule</span>
       </div>
 
       {/* Subtext */}
       {isManual ? (
         <p className="card-subtext">
-          Manual Control will allow you to turn on or off the socket anytime. This overrides any schedules while active.
+          Manual Control lets you turn the socket on or off anytime. This overrides schedules while active.
         </p>
       ) : (
         <p className="card-subtext">
-          Schedule will allow you to keep the socket turned on or off for a specific time period.
+          Schedule keeps the socket {schedulePower === "ON" ? "ON" : "OFF"} between the selected times
+          {repeat ? " each day" : " once"}.
+          <br />
+          Status: <strong>{inside ? "Inside window" : "Outside window"}</strong>
         </p>
       )}
 
@@ -238,12 +253,10 @@ export default function ManualScheduleCard({
               <label className="field-label">Start Time</label>
               <CustomTimePicker value={startTime} onChange={onChangeStart} />
             </div>
-
             <div className="field">
               <label className="field-label">End Time</label>
               <CustomTimePicker value={endTime} onChange={onChangeEnd} />
             </div>
-
             <div className="field">
               <label className="field-label">Mode</label>
               <button
@@ -254,7 +267,6 @@ export default function ManualScheduleCard({
                 {schedulePower}
               </button>
             </div>
-
             <div className="field">
               <label className="field-label">Repeat</label>
               <button

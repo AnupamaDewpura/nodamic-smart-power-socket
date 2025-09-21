@@ -1,5 +1,5 @@
 // src/components/CustomTimePicker.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 const CustomTimePicker = ({ value, onChange, className = "" }) => {
@@ -10,6 +10,16 @@ const CustomTimePicker = ({ value, onChange, className = "" }) => {
   const containerRef = useRef(null);
   const hourListRef = useRef(null);
   const minuteListRef = useRef(null);
+
+  // Options
+  const hourOptions = useMemo(
+    () => Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")),
+    []
+  );
+  const minuteOptions = useMemo(
+    () => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")),
+    []
+  );
 
   // Parse the current value (HH:MM format)
   useEffect(() => {
@@ -36,23 +46,26 @@ const CustomTimePicker = ({ value, onChange, className = "" }) => {
     }
   };
 
-  // Scroll to selected items when dropdown opens
+  // Scroll to selected items when dropdown opens or when selection changes
   useEffect(() => {
-    if (isOpen && hourListRef.current && minuteListRef.current) {
-      const hourIndex = parseInt(selectedHour, 10);
-      const minuteIndex = parseInt(selectedMinute, 10) / 15;
+    if (!isOpen || !hourListRef.current || !minuteListRef.current) return;
 
+    const hourIndex = hourOptions.indexOf(selectedHour);
+    if (hourIndex >= 0) {
       const hourElement = hourListRef.current.children[hourIndex];
       if (hourElement) {
         hourElement.scrollIntoView({ block: "center", behavior: "smooth" });
       }
+    }
 
+    const minuteIndex = minuteOptions.indexOf(selectedMinute);
+    if (minuteIndex >= 0) {
       const minuteElement = minuteListRef.current.children[minuteIndex];
       if (minuteElement) {
         minuteElement.scrollIntoView({ block: "center", behavior: "smooth" });
       }
     }
-  }, [isOpen, selectedHour, selectedMinute]);
+  }, [isOpen, selectedHour, selectedMinute, hourOptions, minuteOptions]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -71,48 +84,46 @@ const CustomTimePicker = ({ value, onChange, className = "" }) => {
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleDisplayClick = () => {
-    if (!isOpen) {
-      calculateDropdownPosition();
-    }
-    setIsOpen(!isOpen);
+    if (!isOpen) calculateDropdownPosition();
+    setIsOpen((o) => !o);
   };
 
   const handleHourSelect = (hour) => {
     setSelectedHour(hour);
-    const newTime = `${hour}:${selectedMinute}`;
-    onChange(newTime);
+    onChange(`${hour}:${selectedMinute}`);
+    // Keep hour list centered on the selection
+    requestAnimationFrame(() => {
+      if (!hourListRef.current) return;
+      const idx = hourOptions.indexOf(hour);
+      if (idx >= 0) {
+        const el = hourListRef.current.children[idx];
+        el?.scrollIntoView({ block: "center" });
+      }
+    });
   };
 
   const handleMinuteSelect = (minute) => {
     setSelectedMinute(minute);
-    const newTime = `${selectedHour}:${minute}`;
-    onChange(newTime);
+    onChange(`${selectedHour}:${minute}`);
+    // Keep minute list centered on the selection
+    requestAnimationFrame(() => {
+      if (!minuteListRef.current) return;
+      const idx = minuteOptions.indexOf(minute);
+      if (idx >= 0) {
+        const el = minuteListRef.current.children[idx];
+        el?.scrollIntoView({ block: "center" });
+      }
+    });
   };
-
-  // Generate hour options (00-23)
-  const hourOptions = [];
-  for (let i = 0; i < 24; i++) {
-    hourOptions.push(String(i).padStart(2, "0"));
-  }
-
-  // Generate minute options (00, 15, 30, 45)
-  const minuteOptions = [];
-  for (let i = 0; i < 60; i += 5) {
-    minuteOptions.push(String(i).padStart(2, "0"));
-  }
 
   const dropdownContent = isOpen ? (
     <div
       className="time-picker-dropdown"
-      style={{
-        top: dropdownPosition.top,
-        left: dropdownPosition.left,
-      }}
+      style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
     >
       <div className="time-picker-content">
         <div className="time-picker-column">
