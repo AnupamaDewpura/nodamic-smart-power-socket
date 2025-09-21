@@ -811,6 +811,7 @@ body {
 
   .mobile-footer-brand {
     display: block;
+    display: none !important;
   }
 
   .copy-notification {
