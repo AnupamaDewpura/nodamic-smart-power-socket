@@ -1,145 +1,48 @@
-# Nodamic Smart Power Socket Dashboard
+# Smart Power Socket 🔌
 
-A **React + Vite** web application that allows users to monitor and control IoT smart sockets.  
-It integrates **Firebase Realtime Database**, **MQTT messaging**, and **Weather API alerts** to provide a responsive, secure, and feature-rich dashboard.
+![Project Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![Hardware Version](https://img.shields.io/badge/Hardware-v2.0-blue)
+![Web App](https://img.shields.io/badge/Web_App-React-61dafb)
 
----
+Welcome to the repository for the **Smart Power Socket**, a complete end-to-end IoT project. This socket enables remote power toggling, smart scheduling, weather-aware operation, and real-time energy monitoring.
 
-## ✨ Features
+## 📁 Repository Structure
 
-- **Login Page**
-  - Secure Google Sign-In with Firebase Authentication.
-  - Redirects users to their devices list after login.
+We use a monorepo structure to keep all related domains of this project together:
 
-- **Your Devices Page**
-  - Displays paired devices linked to the logged-in account.
-  - Includes a sidebar with account info (name, email, user ID) and logout.
-  - Each device card leads to its dashboard.
+- **[`/webapp`](./webapp/)**: The frontend React web application for monitoring and controlling the smart sockets.
+- **[`/firmware`](./firmware/)**: The code that runs on the embedded microcontroller (e.g., ESP32/ESP8266).
+- **[`/hardware`](./hardware/)**: Schematics, PCB layouts, and 3D printable enclosure designs.
+- **[`/assets`](./assets/)**: Documentation media.
+  - `/product-v1`: Photos of the initial prototype.
+  - `/product-v2`: Photos of the high fidelity prototype.
+  - `/ui-screenshots`: Screenshots of the web application in action.
 
-- **Dashboard Page**
-  - **Device Info Card** → Shows device ID, name, and relay status.  
-  - **Manual & Schedule Control** → Toggle socket instantly (Manual) or set timed ON/OFF schedules (Schedule).  
-  - **Algorithm Control** → Enable/disable internal algorithm via MQTT with watchdog safety.  
-  - **Weather Alerts** → Real-time monitoring of critical alerts (thunderstorms, high winds, heavy rain) using WeatherAPI.  
-  - **Power Cut Logs** → Scrollable table showing last 3 logs (up to 10 stored in Firebase).  
+## 🛠️ Components
 
-- **Responsive UI**
-  - Mobile-first design with collapsible sidebar.
-  - Flexible grid layout with **minimum card widths**, preventing layout clipping between desktop and tablet breakpoints.
+### 1. Web Application
+The web app is built with **React** and **Vite**. It provides a real-time dashboard to monitor device status, control the socket manually, and set up automated schedules. 
+*See the [`webapp/README.md`](./webapp/README.md) for setup and deployment instructions.*
 
-- **Security**
-  - Firebase, MQTT, and WeatherAPI credentials stored in `.env`.
-  - `.gitignore` ensures sensitive keys aren’t committed.
-  - Firebase rules enforce per-user/device isolation.
+### 2. Firmware (Coming Soon)
+The C/C++ firmware manages the hardware relays, connects to the local network, and communicates with the frontend via MQTT/REST.
 
----
+### 3. Hardware (Coming Soon)
+The custom electronics and casing required to safely switch high-voltage main power while housing the microcontroller and sensors.
 
-## 🛠️ Tech Stack
+## 📸 Gallery
 
-- **Frontend:** React (Vite) + CSS (custom responsive styles)
-- **Backend Services:**
-  - Firebase Realtime Database (device states, schedules, logs)
-  - Firebase Auth (Google Sign-In)
-  - MQTT Broker (HiveMQ Cloud / custom broker)
-  - WeatherAPI.com (weather alerts)
-- **State Management:** React Hooks
-- **Build Tool:** Vite
-
----
+<div align="center">
+  <img src="./assets/product-v2/main-view.jpg" height="300px" alt="Smart Socket Version 2" />
+  <img src="./assets/ui-screenshots/desktop-ui.png" height="300px" alt="Web App Dashboard" />
+</div>
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/its-thakshila/nodamic-smart-power-socket.git
-cd nodamic-smart-power-socket
-```
+To explore the codebase locally:
 
-### 2. Install dependencies
-```bash
-npm install
-```
-
-### 3. Setup environment variables
-Create a `.env` file in the project root:
-
-```env
-# Firebase
-VITE_FIREBASE_API_KEY=your-key
-VITE_FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
-VITE_FIREBASE_DATABASE_URL=https://your-app.firebaseio.com
-VITE_FIREBASE_PROJECT_ID=your-id
-VITE_FIREBASE_STORAGE_BUCKET=your-app.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-id
-VITE_FIREBASE_APP_ID=your-id
-
-# MQTT
-VITE_MQTT_BROKER_URL=wss://your-broker-url:port/mqtt
-VITE_MQTT_USERNAME=your-username
-VITE_MQTT_PASSWORD=your-password
-
-# WeatherAPI
-VITE_WEATHER_API_KEY=your-key
-```
-
-⚠️ Don’t forget to copy `.env.example` → `.env` and fill in your keys.
-
-### 4. Run in development
-```bash
-npm run dev
-```
-
-### 5. Build for production
-```bash
-npm run build
-```
+1. Clone the repository: `git clone https://github.com/its-thakshila/nodamic-smart-power-socket.git`
+2. Follow the specific instructions in each sub-directory (e.g., `webapp`, `firmware`) to build and run the respective components.
 
 ---
-
-## 📂 Project Structure
-
-```
-NODAMIC-SMART-POWER-SOCKET/
- ├─ public/
- ├─ src/
- │   ├─ assets/               # Logos, icons
- │   ├─ components/           # React components
- │   │   ├─ AlgorithmControlCard.jsx
- │   │   ├─ CustomTimePicker.jsx
- │   │   ├─ DeviceCard.jsx
- │   │   ├─ DeviceDashboard.jsx
- │   │   ├─ DeviceInfoCard.jsx
- │   │   ├─ DevicesList.jsx
- │   │   ├─ Login.jsx
- │   │   ├─ ManualScheduleCard.jsx
- │   │   ├─ PowerCutLogsCard.jsx
- │   │   └─ WeatherAlertsCard.jsx
- │   ├─ services/             # Firebase, MQTT, Weather API
- │   │   ├─ firebase.js
- │   │   ├─ mqttClient.js
- │   │   └─ weather.js
- │   ├─ App.jsx
- │   ├─ dashboard.css
- │   ├─ index.css
- │   └─ main.jsx
- ├─ .env.example
- ├─ .gitignore
- ├─ index.html
- ├─ package.json
- ├─ vite.config.js
- └─ README.md
-```
-
----
-
-## 🔧 Development Notes
-
-- **Watchdog Timeouts:** Relay & algorithm buttons reset from pending state after 10s if MQTT response never comes.  
-- **Logs Management:** Only the last 10 logs are stored in Firebase; card shows 3 latest visible with scroll.  
-- **Responsive Grid:** Uses CSS Grid + `minmax()` for consistent card layout between 768px–1440px.  
-- **Weather Alerts:** Fetched automatically every 5 minutes; short summaries mapped to critical hazards only.  
-
----
-
-## 📜 License
-MIT License © 2025 Nodamic
+*Developed by team Nodamic*
