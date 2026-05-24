@@ -24,7 +24,7 @@ We use a monorepo structure to keep all related domains of this project together
 The web app is built with **React** and **Vite**. It provides a real-time dashboard to monitor device status, control the socket manually, and set up automated schedules. 
 *See the [`webapp/README.md`](./webapp/README.md) for setup and deployment instructions.*
 
-### 2. Firmware (Coming Soon)
+### 2. Firmware
 The C/C++ firmware manages the hardware relays, connects to the local network, and communicates with the frontend via MQTT/REST.
 
 ### 3. Hardware (Coming Soon)
